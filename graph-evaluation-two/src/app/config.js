@@ -1,5 +1,13 @@
-export const WIDTH = 500;
-export const HEIGHT = 500;
+export const WIDTH = 960;
+export const HEIGHT = 960;
 export const NODE_SIZE = 8;
 export const LINK_LENGTH = 20;
 export const ANIMATION_DURATION = 500;
+export const CELL_SIZE = 16;
+export const FONT_SIZE = 18;
+export const SVG_MARGIN = {
+    top: 50, 
+    right: 20, 
+    bottom: 20, 
+    left: 50
+};

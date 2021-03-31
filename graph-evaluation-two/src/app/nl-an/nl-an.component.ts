@@ -20,7 +20,7 @@ export class NlAnComponent implements OnInit {
   private nodes: d3.Selection<any, {}, any, any>;
   private links: d3.Selection<any, {}, any, any>;
 
-  private simulation: d3.Simulation<Node, Link>;
+  private simulation: d3.Simulation<Node, Link<Node>>;
 
   value: number = 1;
   options: Options = {
@@ -39,7 +39,7 @@ export class NlAnComponent implements OnInit {
   }
 
   setup(): void {
-    this.svgContainer = (d3.select('#svg-container') as any)
+    this.svgContainer = (d3.select('#svg-container-nlan') as any)
                           .append('svg')
                           .attr('viewBox', [0, 0, WIDTH, HEIGHT])
                           .attr('width', WIDTH)
@@ -48,7 +48,7 @@ export class NlAnComponent implements OnInit {
     this.g = this.svgContainer.append('g');
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-                        .force('link', d3.forceLink<Node, Link>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
+                        .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
                         .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE*2))
                         .force('charge', d3.forceManyBody().strength(-100))
                         .force('center', d3.forceCenter(WIDTH/2, HEIGHT/2).strength(.25))
