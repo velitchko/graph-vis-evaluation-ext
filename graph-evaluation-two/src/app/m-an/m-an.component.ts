@@ -17,6 +17,7 @@ export class MAnComponent implements OnInit {
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
+  private cells: d3.Selection<any, {}, any, any>;
 
   value: number = 1;
   options: Options = {
@@ -46,6 +47,8 @@ export class MAnComponent implements OnInit {
 
     this.g = this.svgContainer.append('g')
                 .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
+
+    this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
 
   init(): void {
@@ -70,6 +73,7 @@ export class MAnComponent implements OnInit {
           x: targetId,
           y: sourceId,
           link: 0,
+          time: source.time
         };
         if (edgeHash.has(cell.id)) cell.link = 1; 
         this.matrix.push(cell);
@@ -79,19 +83,32 @@ export class MAnComponent implements OnInit {
     this.render();
   }
 
+  update($event: number): void {
+    // CELLS
+    this.cells
+    .transition()
+    .duration(ANIMATION_DURATION)
+    .ease(d3.easeCubicOut)
+    .attr('fill-opacity', (d: any) => { 
+      return d.link ? (d.time === $event ? 1 : 0) : 0;
+    });
+  }
+
   render(): void {
-    this.g.selectAll('.cells').remove();
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
 
-    // CELLS
-    this.g.append('g')
-      .attr('class', 'cells')
-      .selectAll('.cells')
-      .data(this.matrix)
+    // UPDATE
+    this.cells = this.cells.data(this.matrix);
+      
+    // ENTER 
+    this.cells = this.cells
       .enter()
       .append('rect')
-      .attr('class', 'rect')
+      .attr('class', 'cell');
+
+    // JOIN
+    this.cells 
       .attr('width', CELL_SIZE)
       .attr('height', CELL_SIZE)
       .attr('x', (d: any) => { return d.x * CELL_SIZE; })
@@ -103,6 +120,10 @@ export class MAnComponent implements OnInit {
       .attr('stroke', '#999')
       .attr('stroke-width', '1px')
       .attr('stroke-opacity', .1)
+      .merge(this.cells);
+    
+    // EXIT
+    this.cells.selectAll('.cell').remove();
 
     // ROWS
     this.g.append('g')
