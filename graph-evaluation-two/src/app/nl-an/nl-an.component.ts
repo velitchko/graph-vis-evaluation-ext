@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
 import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
-
+import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-nl-an',
   templateUrl: './nl-an.component.html',
@@ -12,6 +13,14 @@ import { Node, Link } from '../node-link';
 })
 
 export class NlAnComponent implements OnInit {
+  
+  @HostListener('window:beforeunload', ['$event']) beforeUnloadHandler($event: Event) {
+      console.log($event);
+      window.alert('Hi');
+
+      this.end();
+  }
+
   private graph: Graph;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
@@ -22,20 +31,46 @@ export class NlAnComponent implements OnInit {
 
   private simulation: d3.Simulation<Node, Link<Node>>;
 
+  private surveyId: string;
+
+  private startTime: number;
+
+  private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
+  private interactions: { zooms: number, drags: number }; // number of zooms, drags
+
   value: number = 1;
+
   options: Options = {
     floor: 1,
     ceil: 4
   };
 
-  constructor(private ds: DataService) { }
+  constructor(private ds: DataService, private route: ActivatedRoute, private http: HttpClient) { }
+
+  end(): void {
+    const endTime = Date.now();
+
+    const time = endTime - this.startTime;
+    // Push to mLab
+    this.http.post('http://localhost:8080/api/results', { survey: this.surveyId, time: time });
+  }
 
   ngOnInit(): void {
-    this.graph = this.ds.getGraph('graph_one');
-    if(this.graph) {
-      this.setup();
-      this.init();
-    }
+    this.startTime = Date.now();
+
+    this.route.queryParams
+      .subscribe(params => {
+        const graph = params['graph'];
+        
+        this.surveyId = params['survey'];
+
+        this.graph = this.ds.getGraph(graph);
+
+        if(this.graph) {
+          this.setup();
+          this.init();
+        }
+      });
   }
 
   setup(): void {
@@ -67,6 +102,8 @@ export class NlAnComponent implements OnInit {
   }
 
   update($event: number): void {
+    if(!this.graph) return;
+
     const nodesOutOfCurrentTime = new Set<string>();
 
     this.nodes
@@ -168,3 +205,7 @@ export class NlAnComponent implements OnInit {
       .attr('y', (d: any) => { return d.y + NODE_SIZE; });
   }
 }
+function unloadHandler() {
+  throw new Error('Function not implemented.');
+}
+
