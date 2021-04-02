@@ -31,13 +31,8 @@ export class NlTlComponent implements OnInit {
   private dragStartTime: number;
   private dragEndTime: number;
   
-  private surveyId: string;
-
-  private startTime: number;
-
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
   private interactions: { zooms: number, drags: number }; // number of zooms, drags
-  
 
   value: number = 1;
 
@@ -55,8 +50,6 @@ export class NlTlComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.startTime = Date.now();
-
     this.route.queryParams
       .subscribe(params => {
         const graph = params['graph'];
