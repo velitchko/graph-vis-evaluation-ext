@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
@@ -12,7 +12,9 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./nl-tl.component.scss']
 })
 
-export class NlTlComponent implements OnInit {
+export class NlTlComponent implements OnInit, AfterViewInit {
+  @ViewChild('container') container: ElementRef;
+
   private graph: Graph;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
@@ -34,6 +36,9 @@ export class NlTlComponent implements OnInit {
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
   private interactions: { zooms: number, drags: number }; // number of zooms, drags
 
+  private width: number;
+  private height: number;
+
   value: number = 1;
 
   options: Options = {
@@ -53,14 +58,20 @@ export class NlTlComponent implements OnInit {
     this.route.queryParams
       .subscribe(params => {
         const graph = params['graph'];
-        
         this.graph = this.ds.getGraph(graph);
-
-        if(this.graph) {
-          this.setup();
-          this.init();
-        }
       });
+  }
+
+  ngAfterViewInit(): void {
+    this.width = (this.container.nativeElement as HTMLElement).offsetWidth;
+    this.height = (this.container.nativeElement as HTMLElement).offsetHeight;
+    console.log(this.width, this.height);
+    if(this.graph) {
+      console.log('init');
+      this.setup();
+      this.init();
+    }
+
   }
 
   zoomStart(): void {
@@ -129,11 +140,11 @@ export class NlTlComponent implements OnInit {
       .on('drag', this.dragging.bind(this))
       .on('end', this.dragEnd.bind(this));
 
-    this.svgContainer = (d3.select('#svg-container-nlan') as any)
+    this.svgContainer = (d3.select('#svg-container-nltl') as any)
                           .append('svg')
-                          .attr('viewBox', [0, 0, WIDTH, HEIGHT])
-                          .attr('width', WIDTH)
-                          .attr('height', HEIGHT)
+                          .attr('viewBox', [0, 0, this.width, this.height])
+                          .attr('width', this.width)
+                          .attr('height', this.height)
                           .call(this.zoom);
 
     this.g = this.svgContainer.append('g');
@@ -144,7 +155,7 @@ export class NlTlComponent implements OnInit {
                         .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
                         .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE*2))
                         .force('charge', d3.forceManyBody().strength(-100))
-                        .force('center', d3.forceCenter(WIDTH/2, HEIGHT/2).strength(.25))
+                        .force('center', d3.forceCenter(this.width/2, this.height/2).strength(.25))
                         .velocityDecay(0.5)
                         .alphaMin(0.3);
 
