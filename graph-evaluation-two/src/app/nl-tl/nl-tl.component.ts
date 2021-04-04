@@ -65,9 +65,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.width = (this.container.nativeElement as HTMLElement).offsetWidth;
     this.height = (this.container.nativeElement as HTMLElement).offsetHeight;
-    console.log(this.width, this.height);
+
     if(this.graph) {
-      console.log('init');
       this.setup();
       this.init();
     }
