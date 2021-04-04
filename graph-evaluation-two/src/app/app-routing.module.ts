@@ -6,15 +6,19 @@ import { MSiComponent } from './m-si/m-si.component';
 import { NlTlComponent } from './nl-tl/nl-tl.component';
 import { NlJpComponent } from './nl-jp/nl-jp.component';
 import { NlSiComponent } from './nl-si/nl-si.component';
+import { NlAnComponent } from './nl-an/nl-an.component';
+import { MAnComponent } from './m-an/m-an.component';
 
 
 const routes: Routes = [
   { path: 'nl-si', component: NlSiComponent },
   { path: 'nl-jp', component: NlJpComponent },
-  { path: 'nl-an', component: NlTlComponent },
+  { path: 'nl-tl', component: NlTlComponent },
+  { path: 'nl-an', component: NlAnComponent },
   { path: 'm-si', component: MSiComponent },
   { path: 'm-jp', component: MJpComponent },
-  { path: 'm-an', component: MTlComponent },
+  { path: 'm-tl', component: MTlComponent },
+  { path: 'm-an', component: MAnComponent }
 ];
 
 @NgModule({
