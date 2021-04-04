@@ -49,7 +49,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     ceil: 4
   };
 
-  constructor(private ds: DataService, private route: ActivatedRoute, private http: HttpClient) { 
+  constructor(private ds: DataService, private route: ActivatedRoute) { 
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
