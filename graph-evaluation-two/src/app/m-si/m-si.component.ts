@@ -20,7 +20,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
   private cells: d3.Selection<any, {}, any, any>;
-  
+
   private width: number;
   private height: number;
 
@@ -30,23 +30,23 @@ export class MSiComponent implements OnInit, AfterViewInit {
     ceil: 4
   };
 
-  constructor(private ds: DataService, private route: ActivatedRoute) { 
+  constructor(private ds: DataService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
   }
 
   ngOnInit(): void {
     this.route.queryParams
-    .subscribe(params => {
-      const graph = params['graph'];
-      this.graph = this.ds.getGraph(graph);
-    });
+      .subscribe(params => {
+        const graph = params['graph'];
+        this.graph = this.ds.getGraph(graph);
+      });
   }
 
   ngAfterViewInit(): void {
     this.width = (this.container.nativeElement as HTMLElement).offsetWidth;
     this.height = (this.container.nativeElement as HTMLElement).offsetHeight;
 
-    if(this.graph) {
+    if (this.graph) {
       this.graph.links.forEach((l: Link<Node>) => {
         let sNode = this.graph.nodes.find((n: Node) => { return n.id === l.source; });
         let tNode = this.graph.nodes.find((n: Node) => { return n.id === l.target; });
@@ -60,13 +60,13 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
   setup(): void {
     this.svgContainer = (d3.select('#svg-container-msi') as any)
-    .append('svg')
-    .attr('viewBox', [0, 0, this.width, this.height])
-    .attr('width', this.width)
-    .attr('height', this.height);
+      .append('svg')
+      .attr('viewBox', [0, 0, this.width, this.height])
+      .attr('width', this.width)
+      .attr('height', this.height);
 
     this.g = this.svgContainer.append('g')
-                .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
+      .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
     this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
@@ -74,17 +74,17 @@ export class MSiComponent implements OnInit, AfterViewInit {
   init(): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
-    .map((l: Link<Node>) => { return { source: l.source, target: l.target }; })
-    .forEach((link: Link<Node>) => {
-      // Undirected graph - duplicate link s-t && t-s
-      let idA: string, idB: string = '';
-      if(link.source === link.target) return;
-      idA = `${(link.source as Node).label}-${(link.target as Node).label}`;
-      idB = `${(link.target as Node).label}-${(link.source as Node).label}`;
+      .map((l: Link<Node>) => { return { source: l.source, target: l.target }; })
+      .forEach((link: Link<Node>) => {
+        // Undirected graph - duplicate link s-t && t-s
+        let idA: string, idB: string = '';
+        if (link.source === link.target) return;
+        idA = `${(link.source as Node).label}-${(link.target as Node).label}`;
+        idB = `${(link.target as Node).label}-${(link.source as Node).label}`;
 
-      edgeHash.set(idA, link);
-      edgeHash.set(idB, link);
-    });
+        edgeHash.set(idA, link);
+        edgeHash.set(idB, link);
+      });
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
@@ -95,7 +95,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
           link: 0,
           time: source.time
         };
-        if (edgeHash.has(cell.id)) cell.link = 1; 
+        if (edgeHash.has(cell.id)) cell.link = 1;
         this.matrix.push(cell);
       });
     });
@@ -108,7 +108,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     // UPDATE
     this.cells = this.cells.data(this.matrix);
-      
+
     // ENTER 
     this.cells = this.cells
       .enter()
@@ -116,7 +116,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('class', 'cell');
 
     // JOIN
-    this.cells 
+    this.cells
       .attr('width', CELL_SIZE)
       .attr('height', CELL_SIZE)
       .attr('x', (d: any) => { return d.x * CELL_SIZE; })
@@ -127,7 +127,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('stroke-width', '1px')
       .attr('stroke-opacity', .25)
       .merge(this.cells);
-    
+
     // EXIT
     this.cells.selectAll('.cell').remove();
 

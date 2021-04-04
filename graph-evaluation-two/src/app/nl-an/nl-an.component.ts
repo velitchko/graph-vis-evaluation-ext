@@ -32,7 +32,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   private drag: d3.DragBehavior<any, {}, any>;
   private dragStartTime: number;
   private dragEndTime: number;
-  
+
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
   private interactions: { zooms: number, drags: number }; // number of zooms, drags
 
@@ -49,7 +49,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     ceil: 4
   };
 
-  constructor(private ds: DataService, private route: ActivatedRoute) { 
+  constructor(private ds: DataService, private route: ActivatedRoute) {
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
@@ -71,7 +71,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     this.width = (this.container.nativeElement as HTMLElement).offsetWidth;
     this.height = (this.container.nativeElement as HTMLElement).offsetHeight;
 
-    if(this.graph) {
+    if (this.graph) {
       this.setup();
       this.init();
     }
@@ -158,25 +158,25 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .on('end', this.dragEnd.bind(this));
 
     this.svgContainer = (d3.select('#svg-container-nlan') as any)
-                          .append('svg')
-                          .attr('viewBox', [0, 0, this.width, this.height])
-                          .attr('width', this.width)
-                          .attr('height', this.height)
-                          .call(this.zoom);
+      .append('svg')
+      .attr('viewBox', [0, 0, this.width, this.height])
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .call(this.zoom);
 
     this.g = this.svgContainer.append('g');
 
 
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-                        .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
-                        .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE*2))
-                        .force('charge', d3.forceManyBody().strength(-100))
-                        .force('center', d3.forceCenter(this.width/2, this.height/2).strength(.25))
-                        .velocityDecay(0.5)
-                        .alphaMin(0.3);
+      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
+      .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE * 2))
+      .force('charge', d3.forceManyBody().strength(-100))
+      .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(.25))
+      .velocityDecay(0.5)
+      .alphaMin(0.3);
 
-    this.simulation.on('tick', () => { 
+    this.simulation.on('tick', () => {
       this.render();
     });
 
@@ -188,7 +188,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   update($event: number): void {
-    if(!this.graph) return;
+    if (!this.graph) return;
 
     const nodesOutOfCurrentTime = new Set<string>();
 
@@ -197,59 +197,59 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(ANIMATION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => { 
-        if(d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-        return d.time === $event ? 1 :  0;
+      .attr('opacity', (d: any) => {
+        if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+        return d.time === $event ? 1 : 0;
       });
 
-      this.nodes
+    this.nodes
       .selectAll('text')
       .transition()
       .duration(ANIMATION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => { 
-        if(d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-        return d.time === $event ? 1 :  0;
+      .attr('opacity', (d: any) => {
+        if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+        return d.time === $event ? 1 : 0;
       });
 
-      this.links
-        .transition()
-        .duration(ANIMATION_DURATION)
-        .ease(d3.easeCubicOut)
-        .attr('opacity', (d: any) => { 
-          return nodesOutOfCurrentTime.has(d.source.label) || nodesOutOfCurrentTime.has(d.target.label) ? 0 : 1;
-        });
+    this.links
+      .transition()
+      .duration(ANIMATION_DURATION)
+      .ease(d3.easeCubicOut)
+      .attr('opacity', (d: any) => {
+        return nodesOutOfCurrentTime.has(d.source.label) || nodesOutOfCurrentTime.has(d.target.label) ? 0 : 1;
+      });
   }
 
   init(): void {
     // UPDATE
     this.nodes = this.nodes.data(this.graph.nodes);
-  
+
     // ENTER
     this.nodes = this.nodes
-    .enter()
-    .append('g')
-    .attr('class', 'node')
-    .style('cursor', 'pointer')
-    .call(this.drag);
+      .enter()
+      .append('g')
+      .attr('class', 'node')
+      .style('cursor', 'pointer')
+      .call(this.drag);
 
     this.nodes
-    .append('circle')
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 1.5)
-    .attr('r', NODE_SIZE)
-    .attr('cx', (d: any) => { return d.x; })
-    .attr('cy', (d: any) => { return d.y; })
-    .attr('fill', 'darkgray');
-    
+      .append('circle')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1.5)
+      .attr('r', NODE_SIZE)
+      .attr('cx', (d: any) => { return d.x; })
+      .attr('cy', (d: any) => { return d.y; })
+      .attr('fill', 'darkgray');
+
     this.nodes.append('text')
-    .text((d: any) => { return d.label; })
-    .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-    .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .text((d: any) => { return d.label; })
+      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
 
     // JOIN
     this.nodes = this.nodes
-    .merge(this.nodes);
+      .merge(this.nodes);
 
     // EXIT
     this.nodes.exit().remove();
@@ -278,10 +278,10 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
   render(): void {
     this.links
-    .attr('x1', (d: any) => { return d.source.x; })
-    .attr('y1', (d: any) => { return d.source.y; })
-    .attr('x2', (d: any) => { return d.target.x; })
-    .attr('y2', (d: any) => { return d.target.y; });
+      .attr('x1', (d: any) => { return d.source.x; })
+      .attr('y1', (d: any) => { return d.source.y; })
+      .attr('x2', (d: any) => { return d.target.x; })
+      .attr('y2', (d: any) => { return d.target.y; });
 
     this.nodes.selectAll('circle')
       .attr('cx', (d: any) => { return d.x; })
