@@ -1,16 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
 import { WIDTH, HEIGHT, CELL_SIZE, ANIMATION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-m-tl',
   templateUrl: './m-tl.component.html',
   styleUrls: ['./m-tl.component.scss']
 })
-export class MTlComponent implements OnInit {
+export class MTlComponent implements OnInit, AfterViewInit {
+  @ViewChild('container') container: ElementRef;
   private graph: Graph;
 
   private matrix: Array<Cell>;
@@ -18,6 +20,9 @@ export class MTlComponent implements OnInit {
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
   private cells: d3.Selection<any, {}, any, any>;
+  
+  private width: number;
+  private height: number;
 
   value: number = 1;
   options: Options = {
@@ -25,25 +30,40 @@ export class MTlComponent implements OnInit {
     ceil: 4
   };
 
-  constructor(private ds: DataService) { 
+  constructor(private ds: DataService, private route: ActivatedRoute) { 
     this.matrix = new Array<Cell>();
   }
 
   ngOnInit(): void {
-    this.graph = this.ds.getGraph('graph_one');
+    this.route.queryParams
+    .subscribe(params => {
+      const graph = params['graph'];
+      this.graph = this.ds.getGraph(graph);
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.width = (this.container.nativeElement as HTMLElement).offsetWidth;
+    this.height = (this.container.nativeElement as HTMLElement).offsetHeight;
+
     if(this.graph) {
+      this.graph.links.forEach((l: Link<Node>) => {
+        let sNode = this.graph.nodes.find((n: Node) => { return n.id === l.source; });
+        let tNode = this.graph.nodes.find((n: Node) => { return n.id === l.target; });
+        l.source = sNode;
+        l.target = tNode;
+      });
       this.setup();
       this.init();
     }
   }
 
   setup(): void {
-    console.log('matrix setup');
-    this.svgContainer = (d3.select('#svg-container-man') as any)
+    this.svgContainer = (d3.select('#svg-container-mtl') as any)
     .append('svg')
-    .attr('viewBox', [0, 0, WIDTH, HEIGHT])
-    .attr('width', WIDTH)
-    .attr('height', HEIGHT);
+    .attr('viewBox', [0, 0, this.width, this.height])
+    .attr('width', this.width)
+    .attr('height', this.height);
 
     this.g = this.svgContainer.append('g')
                 .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
@@ -79,7 +99,6 @@ export class MTlComponent implements OnInit {
         this.matrix.push(cell);
       });
     });
-
     this.render();
   }
 
@@ -113,13 +132,11 @@ export class MTlComponent implements OnInit {
       .attr('height', CELL_SIZE)
       .attr('x', (d: any) => { return d.x * CELL_SIZE; })
       .attr('y', (d: any) => { return d.y * CELL_SIZE; })
-      .attr('fill-opacity', (d: any) => { 
-        return d.link ? 1 : 0;
-      })
+      .attr('fill-opacity', (d: any) => { return d.link ? 1 : 0; })
       .attr('fill', (d: any) => { return 'darkgray'; })
       .attr('stroke', '#999')
       .attr('stroke-width', '1px')
-      .attr('stroke-opacity', .1)
+      .attr('stroke-opacity', .25)
       .merge(this.cells);
     
     // EXIT
