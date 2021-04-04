@@ -232,6 +232,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     .enter()
     .append('g')
     .attr('class', 'node')
+    .style('cursor', 'pointer')
     .call(this.drag);
 
     this.nodes
