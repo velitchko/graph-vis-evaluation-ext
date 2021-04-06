@@ -142,6 +142,8 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: Event): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
@@ -178,6 +180,8 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   mouseOut($event: Event): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+    
     $event.preventDefault();
 
     this.highlightEndTime = Date.now();
