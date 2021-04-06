@@ -5,7 +5,6 @@ import { WIDTH, HEIGHT, CELL_SIZE, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIM
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
-import { identifierModuleUrl } from '@angular/compiler';
 
 @Component({
   selector: 'app-m-an',
@@ -181,7 +180,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
 
   mouseOut($event: Event): void {
     if(!this.interactionSwitch) return; // no interaction for you
-    
+
     $event.preventDefault();
 
     this.highlightEndTime = Date.now();
