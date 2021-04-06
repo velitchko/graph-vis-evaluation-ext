@@ -2,10 +2,9 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION } from '../config';
+import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
-import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-nl-an',
   templateUrl: './nl-an.component.html',
@@ -16,6 +15,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
 
   private graph: Graph;
+  private interactionSwitch: boolean;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
@@ -41,6 +41,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
   private time: number;
   private animationHandle: any; // animation timer handler
+  private customAnimationSpeed: number;
 
   value: number = 1;
 
@@ -57,6 +58,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     };
 
     this.time = 1; // start from first time frame
+    this.interactionSwitch = false;
   }
 
   ngOnInit(): void {
@@ -64,6 +66,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        this.interactionSwitch = (params['interactions'] as boolean);
       });
   }
 
@@ -77,12 +80,31 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     }
   }
 
+  restart(): void {
+    this.stop();
+    this.start();
+  }
+
   stop(): void {
     clearTimeout(this.animationHandle);
   }
 
   start(): void {
     this.animate();
+  }
+
+  slower(): void {
+    if (this.customAnimationSpeed + ANIMATION_INCREMENT <= ANIMATION_UPPER_BOUND) {
+      this.customAnimationSpeed += ANIMATION_INCREMENT;
+    }
+    this.restart();
+  }
+
+  faster(): void {
+    if (this.customAnimationSpeed - ANIMATION_INCREMENT >= ANIMATION_LOWER_BOUND) {
+      this.customAnimationSpeed -= ANIMATION_INCREMENT;
+    }
+    this.restart();
   }
 
   animate(): void {
@@ -92,14 +114,19 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   zoomStart(): void {
+    if(!this.interactionSwitch) return; // no interaction for you
     this.zoomStartTime = Date.now();
   }
 
   zooming($event: any): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+
     this.g.attr('transform', $event.transform);
   }
 
   zoomEnd(): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+
     this.zoomEndTime = Date.now();
 
     const zoomTime = this.zoomEndTime - this.zoomStartTime;
@@ -114,6 +141,8 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+
     this.dragStartTime = Date.now();
 
     $event.subject.fx = $event.subject.x;
@@ -122,12 +151,16 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
 
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if(!this.interactionSwitch) return; // no interaction for you
+
     this.dragEndTime = Date.now();
 
     const dragTime = this.dragEndTime - this.dragStartTime;
