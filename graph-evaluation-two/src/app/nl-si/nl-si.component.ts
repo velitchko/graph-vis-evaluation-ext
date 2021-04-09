@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION } from '../config';
+import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION, NUMBER_OF_TIME_SLICES } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
@@ -16,6 +16,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
 
   private graph: Graph;
+  private interactionSwitch: boolean;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
@@ -24,6 +25,9 @@ export class NlSiComponent implements OnInit, AfterViewInit {
   private links: d3.Selection<any, {}, any, any>;
 
   private simulation: d3.Simulation<Node, Link<Node>>;
+
+  // Color Range
+  private color: d3.ScaleSequential<string, never>;
 
   private zoom: d3.ZoomBehavior<any, {}>;
   private zoomStartTime: number;
@@ -52,6 +56,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       zooms: 0,
       drags: 0
     };
+    this.interactionSwitch = false;
   }
 
   ngOnInit(): void {
@@ -59,6 +64,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        this.interactionSwitch = (params['interactions'] as boolean);
       });
   }
 
@@ -134,6 +140,8 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
 
+    this.color = d3.scaleSequential(d3.interpolateViridis).domain([0, NUMBER_OF_TIME_SLICES]);
+
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
       .on('drag', this.dragging.bind(this))
@@ -165,11 +173,32 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     // Compute Simulation Based on SUPERGRAPH 💪
     this.simulation.alphaTarget(0.3).restart();
 
-    this.nodes = this.g.append('g').attr('class', 'nodes').selectAll('.node');
     this.links = this.g.append('g').attr('class', 'links').selectAll('.link');
+    this.nodes = this.g.append('g').attr('class', 'nodes').selectAll('.node');
   }
 
   init(): void {
+
+
+    // UPDATE
+    this.links = this.links.data(this.graph.links);
+
+    // ENTER
+    this.links = this.links
+      .enter()
+      .append('line')
+      .attr('class', 'link')
+      .attr('stroke', (d: Link<Node>) => { return this.color((d.source as Node).time); })
+      .attr('stroke-opacity', 1)
+      .attr('stroke-width', 1);
+
+    // JOIN
+    this.links = this.links
+      .merge(this.links);
+
+    // EXIT
+    this.links.exit().remove();
+
     // UPDATE
     this.nodes = this.nodes.data(this.graph.nodes);
 
@@ -201,27 +230,6 @@ export class NlSiComponent implements OnInit, AfterViewInit {
 
     // EXIT
     this.nodes.exit().remove();
-
-    // UPDATE
-    this.links = this.links.data(this.graph.links);
-
-    // ENTER
-    this.links = this.links
-      .enter()
-      .append('line')
-      .attr('class', 'link')
-      .attr('stroke', 'darkgray')
-      .attr('stroke-opacity', (d: any) => {
-        return 1
-      })
-      .attr('stroke-width', (d: any) => { return 1; });
-
-    // JOIN
-    this.links = this.links
-      .merge(this.links);
-
-    // EXIT
-    this.links.exit().remove();
   }
 
   render(): void {
