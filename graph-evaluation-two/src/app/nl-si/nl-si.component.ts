@@ -178,19 +178,18 @@ export class NlSiComponent implements OnInit, AfterViewInit {
   }
 
   init(): void {
-
-
     // UPDATE
     this.links = this.links.data(this.graph.links);
 
     // ENTER
-    this.links = this.links
-      .enter()
-      .append('line')
-      .attr('class', 'link')
-      .attr('stroke', (d: Link<Node>) => { return this.color((d.source as Node).time); })
-      .attr('stroke-opacity', 1)
-      .attr('stroke-width', 1);
+      this.links = this.links
+        .enter()
+        .append('line')
+        .attr('time', (d: Link<Node>) => { return (d.source as Node).time; })
+        .attr('class', 'link')
+        .attr('stroke', (d: Link<Node>) => { return this.color((d.source as Node).time); })
+        .attr('stroke-opacity', 1)
+        .attr('stroke-width', 2);
 
     // JOIN
     this.links = this.links
@@ -215,14 +214,14 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
       .attr('r', NODE_SIZE)
-      .attr('cx', (d: any) => { return d.x; })
-      .attr('cy', (d: any) => { return d.y; })
+      .attr('cx', (d: Node) => { return d.x; })
+      .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray');
 
     this.nodes.append('text')
-      .text((d: any) => { return d.label; })
-      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .text((d: Node) => { return d.label; })
+      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
 
     // JOIN
     this.nodes = this.nodes
@@ -233,19 +232,20 @@ export class NlSiComponent implements OnInit, AfterViewInit {
   }
 
   render(): void {
-    this.links
-      .attr('x1', (d: any) => { return d.source.x; })
-      .attr('y1', (d: any) => { return d.source.y; })
-      .attr('x2', (d: any) => { return d.target.x; })
-      .attr('y2', (d: any) => { return d.target.y; });
+      this.links
+        .attr('x1', (d: Link<Node>) => { return (d.source as Node).x + (d.source as Node).time*2; })
+        .attr('y1', (d: Link<Node>) => { return (d.source as Node).y + (d.source as Node).time*2; })
+        .attr('x2', (d: Link<Node>) => { return (d.target as Node).x + (d.source as Node).time*2; })
+        .attr('y2', (d: Link<Node>) => { return (d.target as Node).y + (d.source as Node).time*2; });
+    // }
 
     this.nodes.selectAll('circle')
-      .attr('cx', (d: any) => { return d.x; })
-      .attr('cy', (d: any) => { return d.y; });
+      .attr('cx', (d: Node) => { return d.x; })
+      .attr('cy', (d: Node) => { return d.y; });
 
     this.nodes.selectAll('text')
-      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
   }
 }
 
