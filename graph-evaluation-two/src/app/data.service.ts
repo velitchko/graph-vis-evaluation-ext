@@ -13,6 +13,8 @@ export class Graph {
     this.nodes = nodes;
     this.links = links;
 
+    // TODO: Time as an array [1, 2, 3, 4] - number corresponds to time step
+    // e.g. [2, 3] nodes only exist in time steps 2 and 3
     this.nodes.forEach((n: {label: string, id: number, time?: number}) => {
       n.time = Math.floor(Math.random()*4) + 1;
     });
