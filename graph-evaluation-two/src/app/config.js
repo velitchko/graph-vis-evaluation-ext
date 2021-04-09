@@ -8,6 +8,7 @@ export const ANIMATION_UPPER_BOUND = 10000;
 export const ANIMATION_LOWER_BOUND = 1000;
 export const CELL_SIZE = 16;
 export const FONT_SIZE = 18;
+export const NUMBER_OF_TIME_SLICES = 4;
 export const SVG_MARGIN = {
     top: 50, 
     right: 20, 
