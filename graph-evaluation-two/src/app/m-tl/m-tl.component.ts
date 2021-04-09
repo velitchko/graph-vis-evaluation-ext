@@ -14,12 +14,16 @@ import { ActivatedRoute } from '@angular/router';
 export class MTlComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
   private graph: Graph;
+  private interactionSwitch: boolean;
 
   private matrix: Array<Cell>;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
   private cells: d3.Selection<any, {}, any, any>;
+
+  private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
+  private interactions: { zooms: number, drags: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
@@ -32,6 +36,12 @@ export class MTlComponent implements OnInit, AfterViewInit {
 
   constructor(private ds: DataService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
+    this.timers = new Array<{ type: string, time: number }>();
+    this.interactions = {
+      zooms: 0,
+      drags: 0
+    };
+    this.interactionSwitch = false;
   }
 
   ngOnInit(): void {
@@ -39,6 +49,7 @@ export class MTlComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        this.interactionSwitch = (params['interactions'] as boolean);
       });
   }
 

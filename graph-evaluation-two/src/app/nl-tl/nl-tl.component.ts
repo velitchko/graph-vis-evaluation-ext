@@ -16,6 +16,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
 
   private graph: Graph;
+  private interactionSwitch: boolean;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
@@ -52,6 +53,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       zooms: 0,
       drags: 0
     };
+    this.interactionSwitch = false;
   }
 
   ngOnInit(): void {
@@ -59,6 +61,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        this.interactionSwitch = (params['interactions'] as boolean);
       });
   }
 
