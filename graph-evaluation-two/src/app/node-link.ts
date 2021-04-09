@@ -23,4 +23,5 @@ export class Cell {
     x: number;
     y: number;
     link: number;
+    time: number;
 }

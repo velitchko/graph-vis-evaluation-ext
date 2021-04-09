@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, CELL_SIZE, ANIMATION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
+import { WIDTH, HEIGHT, CELL_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -14,12 +14,30 @@ import { ActivatedRoute } from '@angular/router';
 export class MSiComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
   private graph: Graph;
+  private interactionSwitch: boolean;
 
   private matrix: Array<Cell>;
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
   private cells: d3.Selection<any, {}, any, any>;
+  private background: d3.Selection<any, {}, any, any>;
+  private highlightedRow: d3.Selection<any, {}, any, any>;
+  private highlightedColumn: d3.Selection<any, {}, any, any>;
+
+  // Color Range
+  private color: d3.ScaleSequential<string, never>;
+
+  private zoom: d3.ZoomBehavior<any, {}>;
+  private zoomStartTime: number;
+  private zoomEndTime: number;
+
+  private highlightStartTime: number;
+  private highlightEndTime: number;
+
+
+  private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
+  private interactions: { zooms: number, highlights: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
@@ -32,6 +50,12 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
   constructor(private ds: DataService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
+    this.timers = new Array<{ type: string, time: number }>();
+    this.interactions = {
+      zooms: 0,
+      highlights: 0
+    };
+    this.interactionSwitch = false;
   }
 
   ngOnInit(): void {
@@ -39,6 +63,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        this.interactionSwitch = (params['interactions'] as boolean);
       });
   }
 
@@ -58,15 +83,146 @@ export class MSiComponent implements OnInit, AfterViewInit {
     }
   }
 
+  zoomStart(): void {
+    this.zoomStartTime = Date.now();
+  }
+
+  zooming($event: any): void {
+    this.g.attr('transform', $event.transform);
+  }
+
+  zoomEnd(): void {
+    this.zoomEndTime = Date.now();
+
+    const zoomTime = this.zoomEndTime - this.zoomStartTime;
+    this.timers.push({
+      type: 'zoom',
+      time: zoomTime
+    });
+
+    this.interactions.zooms++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+  }
+
+  mouseOver($event: Event): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
+    $event.preventDefault();
+
+    this.highlightStartTime = Date.now();
+
+    if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+
+    d3.selectAll(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
+      .attr('fill', 'red');
+
+    let source = ($event.currentTarget as any).id.split('-')[0];
+    let target = ($event.currentTarget as any).id.split('-')[1];
+
+    // row highlight
+    d3.selectAll('.rows')
+      .select(`#${source}`)
+      .attr('fill', 'red');
+
+    // column highlight
+    d3.selectAll('.columns')
+      .select(`#${target}`)
+      .attr('fill', 'red');
+
+    const time = +($event.currentTarget as SVGElement).getAttribute('time');
+
+    this.highlightedColumn
+      .attr('fill-opacity', 0.25)
+      .attr('x', ($event.currentTarget as any).x.baseVal.value - (CELL_SIZE / NUMBER_OF_TIME_SLICES * time))
+      .attr('y', 0)
+      .attr('height', ($event.currentTarget as any).y.baseVal.value);
+
+    this.highlightedRow
+      .attr('fill-opacity', 0.25)
+      .attr('x', 0)
+      .attr('y', ($event.currentTarget as any).y.baseVal.value)
+      .attr('width', ($event.currentTarget as any).x.baseVal.value);
+  }
+
+  mouseOut($event: Event): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
+    $event.preventDefault();
+
+    this.highlightEndTime = Date.now();
+
+    d3.selectAll('.cell')
+      .selectAll('rect')
+      .attr('fill', (d: Cell) => { return this.color(d.time); });
+
+    d3.selectAll('text')
+      .attr('fill', 'black');
+
+    this.highlightedColumn
+      .attr('fill-opacity', 0);
+
+    this.highlightedRow
+      .attr('fill-opacity', 0);
+
+    if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
+      const highlightTime = this.highlightEndTime - this.highlightStartTime;
+      this.timers.push({
+        type: 'highlight',
+        time: highlightTime
+      });
+
+      this.interactions.highlights++;
+      parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+    }
+  }
+
+
   setup(): void {
+    this.zoom = d3.zoom()
+      .scaleExtent([0.1, 10])
+      .translateExtent([[-WIDTH, -HEIGHT], [WIDTH * 2, HEIGHT * 2]])
+      .on('start', this.zoomStart.bind(this))
+      .on('zoom', this.zooming.bind(this))
+      .on('end', this.zoomEnd.bind(this));
+
+    this.color = d3.scaleSequential(d3.interpolateViridis).domain([0, NUMBER_OF_TIME_SLICES]);
+
     this.svgContainer = (d3.select('#svg-container-msi') as any)
       .append('svg')
       .attr('viewBox', [0, 0, this.width, this.height])
       .attr('width', this.width)
-      .attr('height', this.height);
+      .attr('height', this.height)
+      .call(this.zoom);
 
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
+
+        // BACKGROUND FOR BORDER
+    this.background = this.g.append('g')
+      .attr('class', 'background')
+      .selectAll('rect');
+
+
+  this.highlightedRow = this.g.append('rect')
+    .attr('class', 'highlighted-row')
+    .attr('width', this.graph.nodes.length * CELL_SIZE)
+    .attr('height', CELL_SIZE)
+    .attr('fill', 'red')
+    .attr('fill-opacity', 0)
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('point-events', 'none');
+
+  this.highlightedColumn = this.g.append('rect')
+    .attr('class', 'highlighted-column')
+    .attr('width', CELL_SIZE)
+    .attr('height', this.graph.nodes.length * CELL_SIZE)
+    .attr('fill', 'red')
+    .attr('fill-opacity', 0)
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('point-events', 'none');
 
     this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
@@ -109,24 +265,46 @@ export class MSiComponent implements OnInit, AfterViewInit {
     // UPDATE
     this.cells = this.cells.data(this.matrix);
 
+    this.background = this.background.data(this.matrix);
+
+    this.background
+    .enter()
+    .append('rect')
+    .attr('x', (d: Cell) => { return d.x * CELL_SIZE; })
+    .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
+    .attr('width', CELL_SIZE) // stroke size * 2
+    .attr('height', CELL_SIZE)
+    .attr('fill', 'transparent')
+    .attr('stroke', '#999')
+    .attr('stroke-width', '1px')
+    .attr('stroke-opacity', .25)
+    .attr('pointer-events', 'none');
+
     // ENTER 
     this.cells = this.cells
       .enter()
-      .append('rect')
-      .attr('class', 'cell');
-
-    // JOIN
-    this.cells
+      .append('g')
+      .attr('class', 'cell')
       .attr('width', CELL_SIZE)
       .attr('height', CELL_SIZE)
-      .attr('x', (d: any) => { return d.x * CELL_SIZE; })
-      .attr('y', (d: any) => { return d.y * CELL_SIZE; })
-      .attr('fill-opacity', (d: any) => { return d.link ? 1 : 0; })
-      .attr('fill', (d: any) => { return 'darkgray'; })
-      .attr('stroke', '#999')
-      .attr('stroke-width', '1px')
-      .attr('stroke-opacity', .25)
-      .merge(this.cells);
+    // JOIN
+    for (let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+      this.cells
+        .append('rect')
+        .attr('width', (CELL_SIZE / NUMBER_OF_TIME_SLICES))
+        .attr('height', CELL_SIZE)
+        .attr('id', (d: Cell) => { return d.id; })
+        .attr('time', i - 1)
+        .attr('x', (d: Cell) => { return d.x * CELL_SIZE + (i - 1) * (CELL_SIZE / NUMBER_OF_TIME_SLICES); })
+        .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
+        .attr('id', (d: Cell) => { return d.id; })
+        .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
+        .attr('fill-opacity', (d: any) => { return d.link ? 1 : 0; })
+        .attr('fill', (d: Cell) => { return this.color(d.time); })
+        .merge(this.cells)
+        .on('mouseover', this.mouseOver.bind(this))
+        .on('mouseout', this.mouseOut.bind(this));
+    }
 
     // EXIT
     this.cells.selectAll('.cell').remove();
@@ -138,6 +316,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .data(this.graph.nodes)
       .enter()
       .append('text')
+      .attr('id', (d: Node) => { return d.label; })
       .attr('y', (d: any, i: number) => {
         return i * CELL_SIZE + CELL_SIZE;
       })
@@ -152,6 +331,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .data(this.graph.nodes)
       .enter()
       .append('text')
+      .attr('id', (d: Node) => { return d.label; })
       .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
       .attr('y', (d: any, i: number) => {
         return i * CELL_SIZE + CELL_SIZE;
