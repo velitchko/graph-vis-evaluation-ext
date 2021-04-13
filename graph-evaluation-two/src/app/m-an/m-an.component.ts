@@ -80,7 +80,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
         l.source = sNode;
         l.target = tNode;
       });
-      console.log(this.graph.links);
+
       this.setup();
       this.init();
     }
@@ -331,7 +331,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
       .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
       .attr('id', (d: Cell) => { return d.id; })
       .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-      .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[0] : 0; })
+      .attr('fill-opacity', (d: Cell) => {  console.log(d.time); return d.link ? d.time[0] : 0; })
       .attr('fill', (d: Cell) => { return 'darkgray'; })
       .attr('stroke', '#999')
       .attr('stroke-width', '1px')
