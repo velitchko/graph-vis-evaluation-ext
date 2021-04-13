@@ -244,19 +244,17 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.links = this.g.select(`#T${i}`).selectAll('.link');
 
       this.links
-        .attr('stroke-opacity', (d: Link<Node>) => { return ((d.source as Node).time === i && (d.target as Node).time === i) ? 1 : 0; })
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i]; })
         .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
         .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
         .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
         .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
 
       this.nodes.selectAll('circle')
-        .attr('fill-opacity', (d: Node) => { return d.time === i ? 1 : 0; })
         .attr('cx', (d: Node) => { return d.x; })
         .attr('cy', (d: Node) => { return d.y; });
 
       this.nodes.selectAll('text')
-        .attr('opacity', (d: Node) => { return d.time === i ? 1 : 0; })
         .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
         .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
     }
