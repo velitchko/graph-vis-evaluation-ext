@@ -301,9 +301,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
 
     this.g.select('#time')
       .select('text')
-      .text(`Time: T${$event}`)
-      .attr('x', 0)
-      .attr('y', -50);;
+      .text(`Time: T${$event}`);
   }
 
   render(): void {
