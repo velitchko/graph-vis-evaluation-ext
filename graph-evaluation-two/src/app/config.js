@@ -2,6 +2,7 @@ export const WIDTH = 960;
 export const HEIGHT = 960;
 export const NODE_SIZE = 8;
 export const LINK_LENGTH = 20;
+export const TRANSITION_DURATION = 750;
 export const ANIMATION_DURATION = 5000;
 export const ANIMATION_INCREMENT = 1000;
 export const ANIMATION_UPPER_BOUND = 10000;
