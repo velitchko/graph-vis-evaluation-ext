@@ -21,9 +21,12 @@ export class MSiComponent implements OnInit, AfterViewInit {
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
   private cells: d3.Selection<any, {}, any, any>;
+  private rows: d3.Selection<any, {}, any, any>;
+  private columns: d3.Selection<any, {}, any, any>;
   private background: d3.Selection<any, {}, any, any>;
   private highlightedRow: d3.Selection<any, {}, any, any>;
   private highlightedColumn: d3.Selection<any, {}, any, any>;
+  private legend: d3.Selection<any, {}, any, any>;
 
   // Color Range
   private color: d3.ScaleSequential<string, never>;
@@ -114,11 +117,15 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
-    d3.selectAll(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
-      .attr('fill', 'red');
+    // this.background.select(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
+    //   .attr('fill', 'red');
 
     let source = ($event.currentTarget as any).id.split('-')[0];
     let target = ($event.currentTarget as any).id.split('-')[1];
+
+    d3.select(`.background #${source}-${target}`)
+      .attr('stroke', 'red')
+      .attr('stroke-opacity', 1);
 
     // row highlight
     d3.selectAll('.rows')
@@ -152,12 +159,13 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.highlightEndTime = Date.now();
 
-    d3.selectAll('.cell')
-      .selectAll('rect')
-      .attr('fill', (d: Cell) => { return this.color(d.time); });
+    this.background
+      .attr('stroke', '#999')
+      .attr('stroke-width', '1px')
+      .attr('stroke-opacity', .25)
 
-    d3.selectAll('text')
-      .attr('fill', 'black');
+    this.rows.attr('fill', 'black');
+    this.columns.attr('fill', 'black');
 
     this.highlightedColumn
       .attr('fill-opacity', 0);
@@ -186,7 +194,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
 
-    this.color = d3.scaleSequential(d3.interpolateViridis).domain([0, NUMBER_OF_TIME_SLICES]);
+    this.color = d3.scaleSequential(d3.interpolateViridis).domain([1, NUMBER_OF_TIME_SLICES]);
 
     this.svgContainer = (d3.select('#svg-container-msi') as any)
       .append('svg')
@@ -198,31 +206,34 @@ export class MSiComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
-        // BACKGROUND FOR BORDER
+    // BACKGROUND FOR BORDER
     this.background = this.g.append('g')
       .attr('class', 'background')
       .selectAll('rect');
 
+    this.legend = this.g.append('g')
+      .attr('class', 'legend')
+      .selectAll('rect');
 
-  this.highlightedRow = this.g.append('rect')
-    .attr('class', 'highlighted-row')
-    .attr('width', this.graph.nodes.length * CELL_SIZE)
-    .attr('height', CELL_SIZE)
-    .attr('fill', 'red')
-    .attr('fill-opacity', 0)
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr('point-events', 'none');
+    this.highlightedRow = this.g.append('rect')
+      .attr('class', 'highlighted-row')
+      .attr('width', this.graph.nodes.length * CELL_SIZE)
+      .attr('height', CELL_SIZE)
+      .attr('fill', 'red')
+      .attr('fill-opacity', 0)
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('point-events', 'none');
 
-  this.highlightedColumn = this.g.append('rect')
-    .attr('class', 'highlighted-column')
-    .attr('width', CELL_SIZE)
-    .attr('height', this.graph.nodes.length * CELL_SIZE)
-    .attr('fill', 'red')
-    .attr('fill-opacity', 0)
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr('point-events', 'none');
+    this.highlightedColumn = this.g.append('rect')
+      .attr('class', 'highlighted-column')
+      .attr('width', CELL_SIZE)
+      .attr('height', this.graph.nodes.length * CELL_SIZE)
+      .attr('fill', 'red')
+      .attr('fill-opacity', 0)
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('point-events', 'none');
 
     this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
@@ -230,7 +241,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
   init(): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
-      .map((l: Link<Node>) => { return { source: l.source, target: l.target }; })
+      .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
       .forEach((link: Link<Node>) => {
         // Undirected graph - duplicate link s-t && t-s
         let idA: string, idB: string = '';
@@ -249,13 +260,17 @@ export class MSiComponent implements OnInit, AfterViewInit {
           x: targetId,
           y: sourceId,
           link: 0,
-          time: source.time
+          time: []
         };
-        if (edgeHash.has(cell.id)) cell.link = 1;
+        if (edgeHash.has(cell.id)) {
+          cell.link = 1;
+          cell.time = edgeHash.get(cell.id).time;
+        }
         this.matrix.push(cell);
       });
     });
     this.render();
+
   }
 
   render(): void {
@@ -267,18 +282,19 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.background = this.background.data(this.matrix);
 
-    this.background
-    .enter()
-    .append('rect')
-    .attr('x', (d: Cell) => { return d.x * CELL_SIZE; })
-    .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
-    .attr('width', CELL_SIZE) // stroke size * 2
-    .attr('height', CELL_SIZE)
-    .attr('fill', 'transparent')
-    .attr('stroke', '#999')
-    .attr('stroke-width', '1px')
-    .attr('stroke-opacity', .25)
-    .attr('pointer-events', 'none');
+    this.background = this.background
+      .enter()
+      .append('rect')
+      .attr('id', (d: Cell) => { return d.id; })
+      .attr('x', (d: Cell) => { return d.x * CELL_SIZE; })
+      .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
+      .attr('width', CELL_SIZE) // stroke size * 2
+      .attr('height', CELL_SIZE)
+      .attr('fill', 'transparent')
+      .attr('stroke', '#999')
+      .attr('stroke-width', '1px')
+      .attr('stroke-opacity', .25)
+      .attr('pointer-events', 'none');
 
     // ENTER 
     this.cells = this.cells
@@ -286,9 +302,36 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .append('g')
       .attr('class', 'cell')
       .attr('width', CELL_SIZE)
-      .attr('height', CELL_SIZE)
+      .attr('height', CELL_SIZE);
+
+    this.legend = this.legend.data([1]);
+
+    this.legend = this.legend
+      .enter()
+      .append('g');
+
     // JOIN
     for (let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+      this.legend
+        .append('rect')
+        .attr('width', 50)
+        .attr('height', 20)
+        .attr('x', 50 * (i - 1))
+        .attr('y', HEIGHT / 2 + SVG_MARGIN.top)
+        .attr('fill-opacity', 1)
+        .attr('fill', this.color(i))
+
+      this.legend
+        .append('text')
+        .text(`T${i}`)
+        .attr('font-size', FONT_SIZE)
+        .attr('fill', 'white')
+        .attr('paint-order', 'stroke')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 2)
+        .attr('x', 50 * (i - 1) + (FONT_SIZE*0.8))
+        .attr('y', HEIGHT / 2 + SVG_MARGIN.top + (FONT_SIZE*0.9));
+
       this.cells
         .append('rect')
         .attr('width', (CELL_SIZE / NUMBER_OF_TIME_SLICES))
@@ -300,7 +343,10 @@ export class MSiComponent implements OnInit, AfterViewInit {
         .attr('id', (d: Cell) => { return d.id; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
         .attr('fill-opacity', (d: any) => { return d.link ? 1 : 0; })
-        .attr('fill', (d: Cell) => { return this.color(d.time); })
+        .attr('fill', (d: Cell) => {
+          let idx = d.time[i - 1] // 0 or 1 if it exists at index
+          return i * idx === 0 ? 'white' : this.color(i * idx);
+        })
         .merge(this.cells)
         .on('mouseover', this.mouseOver.bind(this))
         .on('mouseout', this.mouseOut.bind(this));
@@ -310,7 +356,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
     this.cells.selectAll('.cell').remove();
 
     // ROWS
-    this.g.append('g')
+    this.rows = this.g.append('g')
       .attr('class', 'rows')
       .selectAll('text')
       .data(this.graph.nodes)
@@ -325,7 +371,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('font-size', FONT_SIZE);
 
     // COLUMNS
-    this.g.append('g')
+    this.columns = this.g.append('g')
       .attr('class', 'columns')
       .selectAll('text')
       .data(this.graph.nodes)
