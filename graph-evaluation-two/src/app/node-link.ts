@@ -13,7 +13,7 @@ export class Node implements d3.SimulationNodeDatum {
 };
 
 export class Link<Node> implements d3.SimulationLinkDatum<d3.SimulationNodeDatum> {
-    source: number | Node
+    source: number | Node;
     target: number | Node;
     time?: Array<number>;
 
