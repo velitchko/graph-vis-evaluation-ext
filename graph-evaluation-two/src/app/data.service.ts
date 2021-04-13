@@ -43,13 +43,13 @@ export class DataService {
     switch(graph) {
       case 'graph_one': return new Graph(this.graph_one['nodes'], this.graph_one['links']);
       case 'graph_two': return  new Graph(this.graph_two['nodes'], this.graph_two['links']);;
-      case 'graph_three': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
-      case 'graph_four': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
-      case 'graph_five': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
-      case 'graph_six': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
-      case 'graph_seven': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
-      case 'graph_eight': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
-      case 'graph_nine': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
+      case 'graph_three': return  new Graph(this.graph_three['nodes'], this.graph_three['links']);;
+      case 'graph_four': return  new Graph(this.graph_four['nodes'], this.graph_four['links']);;
+      case 'graph_five': return  new Graph(this.graph_five['nodes'], this.graph_five['links']);;
+      case 'graph_six': return  new Graph(this.graph_six['nodes'], this.graph_six['links']);;
+      case 'graph_seven': return  new Graph(this.graph_seven['nodes'], this.graph_seven['links']);;
+      case 'graph_eight': return  new Graph(this.graph_eight['nodes'], this.graph_eight['links']);;
+      case 'graph_nine': return  new Graph(this.graph_nine['nodes'], this.graph_nine['links']);;
       default: return null;
     }
   }
