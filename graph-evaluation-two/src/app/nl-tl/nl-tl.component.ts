@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION } from '../config';
+import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, TRANSITION_DURATION } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
@@ -61,6 +61,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        console.log(this.graph);
         this.interactionSwitch = (params['interactions'] as boolean);
       });
   }
@@ -151,8 +152,6 @@ export class NlTlComponent implements OnInit, AfterViewInit {
 
     this.g = this.svgContainer.append('g');
 
-
-
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
       .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
       .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE * 2))
@@ -175,34 +174,34 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   update($event: number): void {
     if (!this.graph) return;
 
-    const nodesOutOfCurrentTime = new Set<string>();
-
     this.nodes
       .selectAll('circle')
       .transition()
-      .duration(ANIMATION_DURATION)
-      .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => {
-        if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-        return d.time === $event ? 1 : 0;
-      });
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut);
+      // .attr('opacity', (d: any) => {
+      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+      //   return d.time === $event ? 1 : 0;
+      // });
 
     this.nodes
       .selectAll('text')
       .transition()
-      .duration(ANIMATION_DURATION)
-      .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => {
-        if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-        return d.time === $event ? 1 : 0;
-      });
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut);
+      // .attr('opacity', (d: any) => {
+      //   console.log(d);
+      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+      //   return d.time === $event ? 1 : 0;
+      // });
 
     this.links
+      // .selectAll('link')
       .transition()
-      .duration(ANIMATION_DURATION)
+      .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => {
-        return nodesOutOfCurrentTime.has(d.source.label) || nodesOutOfCurrentTime.has(d.target.label) ? 0 : 1;
+      .attr('stroke-opacity', (d: Link<Node>) => {
+        return d.time[$event-1];
       });
   }
 
@@ -223,14 +222,14 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
       .attr('r', NODE_SIZE)
-      .attr('cx', (d: any) => { return d.x; })
-      .attr('cy', (d: any) => { return d.y; })
+      .attr('cx', (d: Node) => { return d.x; })
+      .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray');
 
     this.nodes.append('text')
-      .text((d: any) => { return d.label; })
-      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .text((d: Node) => { return d.label; })
+      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
 
     // JOIN
     this.nodes = this.nodes
@@ -248,10 +247,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .append('line')
       .attr('class', 'link')
       .attr('stroke', 'darkgray')
-      .attr('stroke-opacity', (d: any) => {
-        return 1
-      })
-      .attr('stroke-width', (d: any) => { return 1; });
+      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[0]; })
+      .attr('stroke-width', 1);
 
     // JOIN
     this.links = this.links
@@ -263,18 +260,18 @@ export class NlTlComponent implements OnInit, AfterViewInit {
 
   render(): void {
     this.links
-      .attr('x1', (d: any) => { return d.source.x; })
-      .attr('y1', (d: any) => { return d.source.y; })
-      .attr('x2', (d: any) => { return d.target.x; })
-      .attr('y2', (d: any) => { return d.target.y; });
+      .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
+      .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
+      .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
+      .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
 
     this.nodes.selectAll('circle')
-      .attr('cx', (d: any) => { return d.x; })
-      .attr('cy', (d: any) => { return d.y; });
+      .attr('cx', (d: Node) => { return d.x; })
+      .attr('cy', (d: Node) => { return d.y; });
 
     this.nodes.selectAll('text')
-      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
   }
 }
 
