@@ -6,7 +6,6 @@ import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, FONT_SIZE, SVG_MARGIN, NUMBER_OF
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
-import { log } from 'console';
 @Component({
   selector: 'app-nl-si',
   templateUrl: './nl-si.component.html',
@@ -162,8 +161,8 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .attr('class', 'legend')
       .selectAll('rect');
 
+    // Linearize graph links
     const tempGraphLinks = this.graph.links;
-    console.log(this.graph.links);
     this.graph.links = new Array<{ source: number; target: number; time: Array<number> }>();
     tempGraphLinks.forEach((link: Link<Node>) => {
       link.time.forEach((t: number, index: number) => {
@@ -174,7 +173,6 @@ export class NlSiComponent implements OnInit, AfterViewInit {
         });
       });
     });
-    console.log(this.graph.links);
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
       .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25/NUMBER_OF_TIME_SLICES).id(d => d.id))
@@ -241,8 +239,6 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     // JOIN
     this.links = this.links
       .merge(this.links);
-
-    console.log(this.links)
 
     // EXIT
     this.links.exit().remove();
