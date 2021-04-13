@@ -1,23 +1,20 @@
 import { Injectable } from '@angular/core';
-import  SFG_30_44 from '../../../python/SFG_30_44.json';
-
+import  SFG_30_37 from '../../../python/SFG_30_37.json';
+import SFG_30_39 from '../../../python/SFG_30_39.json';
+import SFG_30_42 from '../../../python/SFG_30_42.json'
+import SFG_30_43 from '../../../python/SFG_30_43.json'
+import SFG_30_44 from '../../../python/SFG_30_44.json'
 @Injectable({
   providedIn: 'root'
 })
 
 export class Graph {
-  nodes: Array<{label: string, id: number, time?: number}>;
-  links: Array<{source: number, target: number, key: number}>;
+  nodes: Array<{ label: string, id: number }>;
+  links: Array<{ source: number, target: number, time: Array<number> }>;
 
-  constructor(nodes: Array<{label: string, id: number}>, links: Array<{source: number, target: number, key: number}>) {
+  constructor(nodes: Array<{label: string, id: number}>, links: Array<{source: number, target: number, time: Array<number> }>) {
     this.nodes = nodes;
     this.links = links;
-
-    // TODO: Time as an array [1, 2, 3, 4] - number corresponds to time step
-    // e.g. [2, 3] nodes only exist in time steps 2 and 3
-    this.nodes.forEach((n: {label: string, id: number, time?: number}) => {
-      n.time = Math.floor(Math.random()*4) + 1;
-    });
   }
 }
 
@@ -34,14 +31,18 @@ export class DataService {
   private graph_nine = {};
 
   constructor() { 
-    
-    this.graph_one = SFG_30_44;
+    this.graph_one = SFG_30_37;
+    this.graph_two = SFG_30_39;
+    this.graph_three = SFG_30_42;
+    this.graph_four = SFG_30_43;
+    this.graph_five = SFG_30_44;
   }
 
   getGraph(graph: string): Graph {
+    
     switch(graph) {
       case 'graph_one': return new Graph(this.graph_one['nodes'], this.graph_one['links']);
-      case 'graph_two': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
+      case 'graph_two': return  new Graph(this.graph_two['nodes'], this.graph_two['links']);;
       case 'graph_three': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
       case 'graph_four': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
       case 'graph_five': return  new Graph(this.graph_one['nodes'], this.graph_one['links']);;
