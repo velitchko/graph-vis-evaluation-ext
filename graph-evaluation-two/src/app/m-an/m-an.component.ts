@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, CELL_SIZE, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND, SVG_MARGIN, FONT_SIZE } from '../config';
+import { WIDTH, HEIGHT, CELL_SIZE, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -80,6 +80,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
         l.source = sNode;
         l.target = tNode;
       });
+      console.log(this.graph.links);
       this.setup();
       this.init();
     }
@@ -113,9 +114,9 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   animate(): void {
+    this.animationHandle = setTimeout(this.animate.bind(this), this.customAnimationSpeed);
     this.update(this.time);
     this.time === 4 ? this.time = 1 : this.time++;
-    this.animationHandle = setTimeout(this.animate.bind(this), this.customAnimationSpeed);
   }
 
   zoomStart(): void {
@@ -227,6 +228,10 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
+    this.g.append('g')
+      .attr('id', 'time');
+      
+
     this.highlightedRow = this.g.append('rect')
       .attr('class', 'highlighted-row')
       .attr('width', this.graph.nodes.length * CELL_SIZE)
@@ -253,7 +258,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
   init(): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
-      .map((l: Link<Node>) => { return { source: l.source, target: l.target }; })
+      .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
       .forEach((link: Link<Node>) => {
         // Undirected graph - duplicate link s-t && t-s
         let idA: string, idB: string = '';
@@ -272,9 +277,12 @@ export class MAnComponent implements OnInit, AfterViewInit {
           x: targetId,
           y: sourceId,
           link: 0,
-          time: source.time
+          time: []
         };
-        if (edgeHash.has(cell.id)) cell.link = 1;
+        if (edgeHash.has(cell.id)) {
+          cell.link = 1;
+          cell.time = edgeHash.get(cell.id).time;
+        }
         this.matrix.push(cell);
       });
     });
@@ -285,16 +293,28 @@ export class MAnComponent implements OnInit, AfterViewInit {
     // CELLS
     this.cells
       .transition()
-      .duration(ANIMATION_INCREMENT)
+      .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicIn)
       .attr('fill-opacity', (d: any) => {
-        return d.link ? (d.time === $event ? 1 : 0) : 0;
+        return d.link ? d.time[$event - 1] : 0;
       });
+
+    this.g.select('#time')
+      .select('text')
+      .text(`Time: T${$event}`)
+      .attr('x', 0)
+      .attr('y', -50);;
   }
 
   render(): void {
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
+
+    this.g.select('#time')
+      .append('text')
+      .text('Time: T1')
+      .attr('x', 0)
+      .attr('y', -50);
 
     // UPDATE
     this.cells = this.cells.data(this.matrix);
@@ -313,7 +333,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
       .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
       .attr('id', (d: Cell) => { return d.id; })
       .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-      .attr('fill-opacity', (d: Cell) => { return d.link ? 1 : 0; })
+      .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[0] : 0; })
       .attr('fill', (d: Cell) => { return 'darkgray'; })
       .attr('stroke', '#999')
       .attr('stroke-width', '1px')
