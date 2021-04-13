@@ -27,5 +27,9 @@ export class Cell {
     x: number;
     y: number;
     link: number;
-    time: number;
+    time: Array<number>;
+
+    constructor() {
+        this.time = new Array<number>();
+    }
 }
