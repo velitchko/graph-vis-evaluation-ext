@@ -2,10 +2,11 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION, NUMBER_OF_TIME_SLICES } from '../config';
+import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, FONT_SIZE, SVG_MARGIN, NUMBER_OF_TIME_SLICES } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
+import { log } from 'console';
 @Component({
   selector: 'app-nl-si',
   templateUrl: './nl-si.component.html',
@@ -20,6 +21,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
 
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
+  private legend: d3.Selection<any, {}, any, any>;
 
   private nodes: d3.Selection<any, {}, any, any>;
   private links: d3.Selection<any, {}, any, any>;
@@ -140,7 +142,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
 
-    this.color = d3.scaleSequential(d3.interpolateViridis).domain([0, NUMBER_OF_TIME_SLICES]);
+    this.color = d3.scaleSequential(d3.interpolateViridis).domain([1, NUMBER_OF_TIME_SLICES]);
 
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
@@ -156,7 +158,23 @@ export class NlSiComponent implements OnInit, AfterViewInit {
 
     this.g = this.svgContainer.append('g');
 
+    this.legend = this.g.append('g')
+      .attr('class', 'legend')
+      .selectAll('rect');
 
+    const tempGraphLinks = this.graph.links;
+    console.log(this.graph.links);
+    this.graph.links = new Array<{ source: number; target: number; time: Array<number> }>();
+    tempGraphLinks.forEach((link: Link<Node>) => {
+      link.time.forEach((t: number, index: number) => {
+        this.graph.links.push({
+          source: (link.source as number),
+          target: (link.target as number),
+          time: [(index + 1) * t]
+        });
+      });
+    });
+    console.log(this.graph.links);
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
       .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
@@ -178,22 +196,53 @@ export class NlSiComponent implements OnInit, AfterViewInit {
   }
 
   init(): void {
+    this.legend = this.legend.data([1]);
+
+    this.legend = this.legend
+      .enter()
+      .append('g');
+
+    for (let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+      this.legend
+        .append('rect')
+        .attr('width', 50)
+        .attr('height', 20)
+        .attr('x', 50 * (i - 1))
+        .attr('y', HEIGHT / 2 + SVG_MARGIN.top)
+        .attr('fill-opacity', 1)
+        .attr('fill', this.color(i))
+
+      this.legend
+        .append('text')
+        .text(`T${i}`)
+        .attr('font-size', FONT_SIZE)
+        .attr('fill', 'white')
+        .attr('paint-order', 'stroke')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 2)
+        .attr('x', 50 * (i - 1) + (FONT_SIZE * 0.8))
+        .attr('y', HEIGHT / 2 + SVG_MARGIN.top + (FONT_SIZE * 0.9));
+    }
+
     // UPDATE
     this.links = this.links.data(this.graph.links);
 
     // ENTER
-      this.links = this.links
-        .enter()
-        .append('line')
-        .attr('time', (d: Link<Node>) => { return (d.source as Node).time; })
-        .attr('class', 'link')
-        .attr('stroke', (d: Link<Node>) => { return this.color((d.source as Node).time); })
-        .attr('stroke-opacity', 1)
-        .attr('stroke-width', 2);
+    this.links = this.links
+      .enter()
+      .append('line')
+      .attr('class', 'link')
+      .attr('stroke', (d: Link<Node>, i: number) => {
+        return d.time[0] ? this.color(d.time[0]) : 'white';
+      })
+      .attr('stroke-opacity', 1)
+      .attr('stroke-width', 2);
 
     // JOIN
     this.links = this.links
       .merge(this.links);
+
+    console.log(this.links)
 
     // EXIT
     this.links.exit().remove();
@@ -232,12 +281,35 @@ export class NlSiComponent implements OnInit, AfterViewInit {
   }
 
   render(): void {
-      this.links
-        .attr('x1', (d: Link<Node>) => { return (d.source as Node).x + (d.source as Node).time*2; })
-        .attr('y1', (d: Link<Node>) => { return (d.source as Node).y + (d.source as Node).time*2; })
-        .attr('x2', (d: Link<Node>) => { return (d.target as Node).x + (d.source as Node).time*2; })
-        .attr('y2', (d: Link<Node>) => { return (d.target as Node).y + (d.source as Node).time*2; });
-    // }
+    this.links
+      .attr('x1', (d: Link<Node>, i: number) => { 
+        let idx = i % 4;
+        let dx = (d.target as Node).x - (d.source as Node).x;
+        let dy = (d.target as Node).y - (d.source as Node).y;
+        let angle = Math.atan2(dy, dx);
+        return (d.source as Node).x + Math.sin(angle-Math.PI)*(idx*2 - NODE_SIZE/2);
+      })
+      .attr('y1', (d: Link<Node>, i: number) => { 
+        let idx = i % 4;
+        let dx = (d.target as Node).x - (d.source as Node).x;
+        let dy = (d.target as Node).y - (d.source as Node).y;
+        let angle = Math.atan2(dy, dx);
+        return (d.source as Node).y + Math.cos(angle)*(idx*2 - NODE_SIZE/2);
+      })
+      .attr('x2', (d: Link<Node>, i: number) => { 
+        let idx = i % 4;
+        let dx = (d.target as Node).x - (d.source as Node).x;
+        let dy = (d.target as Node).y - (d.source as Node).y;
+        let angle = Math.atan2(dy, dx);
+        return (d.target as Node).x + Math.sin(angle-Math.PI)*(idx*2 - NODE_SIZE/2);
+      })
+      .attr('y2', (d: Link<Node>, i: number) => { 
+        let idx = i % 4;
+        let dx = (d.target as Node).x - (d.source as Node).x;
+        let dy = (d.target as Node).y - (d.source as Node).y;
+        let angle = Math.atan2(dy, dx);
+        return (d.target as Node).y + Math.cos(angle)*(idx*2 - NODE_SIZE/2);
+      });
 
     this.nodes.selectAll('circle')
       .attr('cx', (d: Node) => { return d.x; })
