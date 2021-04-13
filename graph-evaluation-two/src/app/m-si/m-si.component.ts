@@ -203,16 +203,16 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('height', this.height)
       .call(this.zoom);
 
+    this.legend = this.svgContainer.append('g')
+      .attr('class', 'legend')
+      .selectAll('rect');
+
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
     // BACKGROUND FOR BORDER
     this.background = this.g.append('g')
       .attr('class', 'background')
-      .selectAll('rect');
-
-    this.legend = this.g.append('g')
-      .attr('class', 'legend')
       .selectAll('rect');
 
     this.highlightedRow = this.g.append('rect')
@@ -329,8 +329,8 @@ export class MSiComponent implements OnInit, AfterViewInit {
         .attr('paint-order', 'stroke')
         .attr('stroke', 'black')
         .attr('stroke-width', 2)
-        .attr('x', 50 * (i - 1) + (FONT_SIZE*0.8))
-        .attr('y', HEIGHT / 2 + SVG_MARGIN.top + (FONT_SIZE*0.9));
+        .attr('x', 50 * (i - 1) + (FONT_SIZE * 0.8))
+        .attr('y', HEIGHT / 2 + SVG_MARGIN.top + (FONT_SIZE * 0.9));
 
       this.cells
         .append('rect')
