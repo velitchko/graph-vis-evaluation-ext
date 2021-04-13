@@ -344,7 +344,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
         .attr('fill-opacity', (d: any) => { return d.link ? 1 : 0; })
         .attr('fill', (d: Cell) => {
-          let idx = d.time[i - 1] // 0 or 1 if it exists at index
+          const idx = d.time[i - 1] // 0 or 1 if it exists at index
           return i * idx === 0 ? 'white' : this.color(i * idx);
         })
         .merge(this.cells)
