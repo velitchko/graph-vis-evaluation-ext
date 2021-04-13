@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND } from '../config';
+import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, ANIMATION_DURATION, TRANSITION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 @Component({
@@ -51,14 +51,14 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   };
 
   constructor(private ds: DataService, private route: ActivatedRoute) {
+    this.time = 1; // start from first time frame
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
       drags: 0
     };
-
-    this.time = 1; // start from first time frame
     this.interactionSwitch = false;
+    this.customAnimationSpeed = ANIMATION_DURATION;
   }
 
   ngOnInit(): void {
@@ -109,7 +109,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
   animate(): void {
     this.update(this.time);
-    this.time === 4 ? this.time = 0 : this.time++;
+    this.time === 4 ? this.time = 1 : this.time++;
     this.animationHandle = setTimeout(this.animate.bind(this), ANIMATION_DURATION);
   }
 
@@ -178,6 +178,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   setup(): void {
+    console.log(this.graph.links);
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
       .translateExtent([[-WIDTH, -HEIGHT], [WIDTH * 2, HEIGHT * 2]])
@@ -199,7 +200,8 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
     this.g = this.svgContainer.append('g');
 
-
+    this.g.append('g')
+      .attr('id', 'time');
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
       .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
@@ -223,38 +225,45 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   update($event: number): void {
     if (!this.graph) return;
 
-    const nodesOutOfCurrentTime = new Set<string>();
-
     this.nodes
       .selectAll('circle')
       .transition()
-      .duration(ANIMATION_DURATION)
-      .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => {
-        if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-        return d.time === $event ? 1 : 0;
-      });
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut);
+      // .attr('opacity', (d: any) => {
+      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+      //   return d.time === $event ? 1 : 0;
+      // });
 
     this.nodes
       .selectAll('text')
       .transition()
-      .duration(ANIMATION_DURATION)
-      .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => {
-        if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-        return d.time === $event ? 1 : 0;
-      });
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut);
+      // .attr('opacity', (d: any) => {
+      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+      //   return d.time === $event ? 1 : 0;
+      // });
 
     this.links
       .transition()
-      .duration(ANIMATION_DURATION)
+      .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('opacity', (d: any) => {
-        return nodesOutOfCurrentTime.has(d.source.label) || nodesOutOfCurrentTime.has(d.target.label) ? 0 : 1;
-      });
+      .attr('opacity', (d: Link<Node>) => { return d.time[$event - 1]; });
+
+      
+    this.g.select('#time')
+    .select('text')
+    .text(`Time: T${$event}`);
   }
 
   init(): void {
+    this.g.select('#time')
+      .append('text')
+      .text('Time: T1')
+      .attr('x', WIDTH/2)
+      .attr('y', 200);
+
     // UPDATE
     this.nodes = this.nodes.data(this.graph.nodes);
 
@@ -271,14 +280,14 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
       .attr('r', NODE_SIZE)
-      .attr('cx', (d: any) => { return d.x; })
-      .attr('cy', (d: any) => { return d.y; })
+      .attr('cx', (d: Node) => { return d.x; })
+      .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray');
 
     this.nodes.append('text')
-      .text((d: any) => { return d.label; })
-      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .text((d: Node) => { return d.label; })
+      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
 
     // JOIN
     this.nodes = this.nodes
@@ -296,10 +305,8 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .append('line')
       .attr('class', 'link')
       .attr('stroke', 'darkgray')
-      .attr('stroke-opacity', (d: any) => {
-        return 1
-      })
-      .attr('stroke-width', (d: any) => { return 1; });
+      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[0]; })
+      .attr('stroke-width', 1);
 
     // JOIN
     this.links = this.links
@@ -311,18 +318,18 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
   render(): void {
     this.links
-      .attr('x1', (d: any) => { return d.source.x; })
-      .attr('y1', (d: any) => { return d.source.y; })
-      .attr('x2', (d: any) => { return d.target.x; })
-      .attr('y2', (d: any) => { return d.target.y; });
+      .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
+      .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
+      .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
+      .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
 
     this.nodes.selectAll('circle')
-      .attr('cx', (d: any) => { return d.x; })
-      .attr('cy', (d: any) => { return d.y; });
+      .attr('cx', (d: Node) => { return d.x; })
+      .attr('cy', (d: Node) => { return d.y; });
 
     this.nodes.selectAll('text')
-      .attr('x', (d: any) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: any) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
+      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
   }
 }
 
