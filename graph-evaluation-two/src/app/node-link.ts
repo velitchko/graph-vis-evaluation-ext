@@ -10,12 +10,16 @@ export class Node implements d3.SimulationNodeDatum {
     fy?: number;
     label: string;
     id: number;
-    time?: number;
 };
 
 export class Link<Node> implements d3.SimulationLinkDatum<d3.SimulationNodeDatum> {
     source: number | Node
     target: number | Node;
+    time?: Array<number>;
+
+    constructor() {
+        this.time = new Array<number>();
+    }
 }
 
 export class Cell {
