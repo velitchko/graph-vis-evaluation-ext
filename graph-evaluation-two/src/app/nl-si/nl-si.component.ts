@@ -155,11 +155,11 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .attr('height', this.height)
       .call(this.zoom);
 
-    this.g = this.svgContainer.append('g');
-
-    this.legend = this.g.append('g')
+    this.legend = this.svgContainer.append('g')
       .attr('class', 'legend')
       .selectAll('rect');
+
+    this.g = this.svgContainer.append('g');
 
     // Linearize graph links
     const tempGraphLinks = this.graph.links;
@@ -175,7 +175,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     });
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25/NUMBER_OF_TIME_SLICES).id(d => d.id))
+      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25 / NUMBER_OF_TIME_SLICES).id(d => d.id))
       .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE * 2))
       .force('charge', d3.forceManyBody().strength(-100))
       .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(.25))
@@ -278,33 +278,33 @@ export class NlSiComponent implements OnInit, AfterViewInit {
 
   render(): void {
     this.links
-      .attr('x1', (d: Link<Node>, i: number) => { 
+      .attr('x1', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.source as Node).x + Math.sin(angle-Math.PI)*(idx*2 - NODE_SIZE/2);
+        return (d.source as Node).x + Math.sin(angle - Math.PI) * (idx * 2 - NODE_SIZE / 2);
       })
-      .attr('y1', (d: Link<Node>, i: number) => { 
+      .attr('y1', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.source as Node).y + Math.cos(angle)*(idx*2 - NODE_SIZE/2);
+        return (d.source as Node).y + Math.cos(angle) * (idx * 2 - NODE_SIZE / 2);
       })
-      .attr('x2', (d: Link<Node>, i: number) => { 
+      .attr('x2', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.target as Node).x + Math.sin(angle-Math.PI)*(idx*2 - NODE_SIZE/2);
+        return (d.target as Node).x + Math.sin(angle - Math.PI) * (idx * 2 - NODE_SIZE / 2);
       })
-      .attr('y2', (d: Link<Node>, i: number) => { 
+      .attr('y2', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.target as Node).y + Math.cos(angle)*(idx*2 - NODE_SIZE/2);
+        return (d.target as Node).y + Math.cos(angle) * (idx * 2 - NODE_SIZE / 2);
       });
 
     this.nodes.selectAll('circle')
