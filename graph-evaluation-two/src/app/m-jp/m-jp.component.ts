@@ -232,7 +232,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
   init(): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
-      .map((l: Link<Node>) => { return { source: l.source, target: l.target }; })
+      .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
       .forEach((link: Link<Node>) => {
         // Undirected graph - duplicate link s-t && t-s
         let idA: string, idB: string = '';
@@ -251,9 +251,12 @@ export class MJpComponent implements OnInit, AfterViewInit {
           x: targetId,
           y: sourceId,
           link: 0,
-          time: source.time
+          time: []
         };
-        if (edgeHash.has(cell.id)) cell.link = 1;
+        if (edgeHash.has(cell.id)) {
+          cell.link = 1;
+          cell.time = edgeHash.get(cell.id).time;
+        }
         this.matrix.push(cell);
       });
     });
@@ -261,9 +264,10 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   render(): void {
+    this.g.selectAll('.rows').remove();
+    this.g.selectAll('.columns').remove();
+
     for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
-      // this.g.selectAll('.rows').remove();
-      // this.g.selectAll('.columns').remove();
 
       this.g.select(`#T${i}`)
       .append('text')
@@ -290,7 +294,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
         .attr('id', (d: Cell) => { return d.id; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-        .attr('fill-opacity', (d: Cell) => { return d.link ? 1 : 0; })
+        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i] : 0;  })
         .attr('fill', (d: Cell) => { return 'darkgray'; })
         .attr('stroke', '#999')
         .attr('stroke-width', '1px')
