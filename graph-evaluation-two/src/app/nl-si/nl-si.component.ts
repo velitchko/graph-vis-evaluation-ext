@@ -177,7 +177,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     console.log(this.graph.links);
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
+      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25/NUMBER_OF_TIME_SLICES).id(d => d.id))
       .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE * 2))
       .force('charge', d3.forceManyBody().strength(-100))
       .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(.25))
