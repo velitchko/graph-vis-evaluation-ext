@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, FONT_SIZE, SVG_MARGIN, NUMBER_OF_TIME_SLICES } from '../config';
+import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, FONT_SIZE, SVG_MARGIN, NUMBER_OF_TIME_SLICES, TRANSITION_DURATION } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
@@ -133,6 +133,26 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
 
+  mouseOver($event: Event): void {
+    const time = +($event.currentTarget as SVGElement).getAttribute('time');
+    
+    if(!time) return;
+    
+    this.links
+      .transition()
+      .duration(TRANSITION_DURATION/2)
+      .attr('stroke-opacity', (d: Link<Node>) => {
+        return d.time[0] === time ? 1 : 0.125;
+      });
+  }
+
+  mouseOut($event: Event): void {
+    this.links
+    .transition()
+    .duration(TRANSITION_DURATION/2)
+    .attr('stroke-opacity', 1);
+  }
+
   setup(): void {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
@@ -234,7 +254,10 @@ export class NlSiComponent implements OnInit, AfterViewInit {
         return d.time[0] ? this.color(d.time[0]) : 'white';
       })
       .attr('stroke-opacity', 1)
-      .attr('stroke-width', 2);
+      .attr('stroke-width', 2)
+      .attr('time', (d: Link<Node>) => { return d.time[0]; })
+      .on('mouseover', this.mouseOver.bind(this))
+      .on('mouseout', this.mouseOut.bind(this));
 
     // JOIN
     this.links = this.links
