@@ -40,7 +40,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
 
   private time: number;
   private animationHandle: any; // animation timer handler
-  private customAnimationSpeed: number;
+  customAnimationSpeed: number;
 
   value: number = 1;
   options: Options = {
