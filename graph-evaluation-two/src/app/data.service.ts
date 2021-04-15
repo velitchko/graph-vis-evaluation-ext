@@ -4,6 +4,7 @@ import SFG_30_39 from '../../../python/SFG_30_39.json';
 import SFG_30_42 from '../../../python/SFG_30_42.json'
 import SFG_30_43 from '../../../python/SFG_30_43.json'
 import SFG_30_44 from '../../../python/SFG_30_44.json'
+import SFG_30_54_clique from '../../../python/SFG_30_54_clique.json'
 @Injectable({
   providedIn: 'root'
 })
@@ -36,6 +37,7 @@ export class DataService {
     this.graph_three = SFG_30_42;
     this.graph_four = SFG_30_43;
     this.graph_five = SFG_30_44;
+    this.graph_six = SFG_30_54_clique;
   }
 
   getGraph(graph: string): Graph {
