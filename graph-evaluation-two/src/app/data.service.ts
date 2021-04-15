@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import  SFG_30_37 from '../../../python/SFG_30_37.json';
-import SFG_30_39 from '../../../python/SFG_30_39.json';
-import SFG_30_42 from '../../../python/SFG_30_42.json'
-import SFG_30_43 from '../../../python/SFG_30_43.json'
-import SFG_30_44 from '../../../python/SFG_30_44.json'
-import SFG_30_54_clique from '../../../python/SFG_30_54_clique.json'
+import  SFG_30_37 from '../assets/SFG_30_37.json';
+import SFG_30_39 from '../assets/SFG_30_39.json';
+import SFG_30_42 from '../assets/SFG_30_42.json'
+import SFG_30_43 from '../assets/SFG_30_43.json'
+import SFG_30_44 from '../assets/SFG_30_44.json'
+import SFG_30_54_clique from '../assets/SFG_30_54_clique.json'
 @Injectable({
   providedIn: 'root'
 })
