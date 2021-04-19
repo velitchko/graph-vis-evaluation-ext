@@ -138,6 +138,12 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('fill', 'red');
 
     const time = +($event.currentTarget as SVGElement).getAttribute('time');
+    // console.log($event.currentTarget, time);
+    // this.cells.selectAll(`[time="${time}"]`)
+    //   .attr('fill-opacity', (d: Cell, i: number) => { 
+    //     const idx = i % 4;
+    //     return d.time[idx] === i ? 1 : 0;
+    //   });
 
     this.highlightedColumn
       .attr('fill-opacity', 0.25)
@@ -166,6 +172,9 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.rows.attr('fill', 'black');
     this.columns.attr('fill', 'black');
+
+    // this.cells
+    //   .attr('fill-opacity', 1);
 
     this.highlightedColumn
       .attr('fill-opacity', 0);

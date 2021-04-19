@@ -138,19 +138,19 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     
     if(!time) return;
     
-    this.links
-      .transition()
-      .duration(TRANSITION_DURATION/2)
-      .attr('stroke-opacity', (d: Link<Node>) => {
-        return d.time[0] === time ? 1 : 0.125;
-      });
+    // this.links
+    //   .transition()
+    //   .duration(TRANSITION_DURATION/2)
+    //   .attr('stroke-opacity', (d: Link<Node>) => {
+    //     return d.time[0] === time ? 1 : 0.125;
+    //   });
   }
 
   mouseOut($event: Event): void {
-    this.links
-    .transition()
-    .duration(TRANSITION_DURATION/2)
-    .attr('stroke-opacity', 1);
+    // this.links
+    // .transition()
+    // .duration(TRANSITION_DURATION/2)
+    // .attr('stroke-opacity', 1);
   }
 
   setup(): void {
