@@ -115,7 +115,7 @@ export class DataService {
       case 'graph_thirteen': return  new Graph(this.graph_thirteen['nodes'], this.graph_thirteen['links']);
       case 'graph_fourteen': return  new Graph(this.graph_fourteen['nodes'], this.graph_fourteen['links']);
       case 'graph_fifteen': return  new Graph(this.graph_fifteen['nodes'], this.graph_fifteen['links']);
-      case 'graph_sixteen': return  new Graph(this.graph_sixteen['nodes'], this.graph_nine['links']);
+      case 'graph_sixteen': return  new Graph(this.graph_sixteen['nodes'], this.graph_sixteen['links']);
       case 'graph_seventeen': return  new Graph(this.graph_seventeen['nodes'], this.graph_seventeen['links']);
       case 'graph_eighteen': return  new Graph(this.graph_eighteen['nodes'], this.graph_eighteen['links']);
       case 'graph_nineteen': return  new Graph(this.graph_nineteen['nodes'], this.graph_nineteen['links']);
