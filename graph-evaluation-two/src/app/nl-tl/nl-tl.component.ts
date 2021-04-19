@@ -124,7 +124,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
     if (!this.interactionSwitch) return; // no interaction for you
-    
+
     this.dragEndTime = Date.now();
 
     const dragTime = this.dragEndTime - this.dragStartTime;
