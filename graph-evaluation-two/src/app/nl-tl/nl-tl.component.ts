@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, TRANSITION_DURATION } from '../config';
+import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, TRANSITION_DURATION } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
@@ -40,11 +40,16 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   private width: number;
   private height: number;
 
-  value: number = 1;
+  sliderWidth: string;
 
+  value: number = 1;
   options: Options = {
     floor: 1,
-    ceil: 4
+    ceil: 4,
+    ticksArray: [1, 2, 3, 4],
+    translate: (value: number): string => {
+      return `Time: ${value}`;
+    }
   };
 
   constructor(private ds: DataService, private route: ActivatedRoute, private http: HttpClient) {
@@ -54,6 +59,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       drags: 0
     };
     this.interactionSwitch = false;
+    this.sliderWidth = `${NODE_LINK_SIZE.WIDTH}px`;
   }
 
   ngOnInit(): void {
@@ -144,7 +150,6 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   setup(): void {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
-      .translateExtent([[-WIDTH, -HEIGHT], [WIDTH * 2, HEIGHT * 2]])
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
@@ -164,10 +169,10 @@ export class NlTlComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g');
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25).id(d => d.id))
-      .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE * 2))
-      .force('charge', d3.forceManyBody().strength(-100))
-      .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(.25))
+      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(SIMULATION_CONFIGURATION.LINK_DISTANCE).strength(SIMULATION_CONFIGURATION.LINK_STRENGTH).id(d => d.id))
+      .force('collide', d3.forceCollide().strength(SIMULATION_CONFIGURATION.NODE_STRENGTH).radius(DISPLAY_CONFIGURATION.NODE_RADIUS * 2))
+      .force('charge', d3.forceManyBody().strength(SIMULATION_CONFIGURATION.MANYBODY_STRENGTH))
+      .force('center', d3.forceCenter(NODE_LINK_SIZE.WIDTH / 2, NODE_LINK_SIZE.HEIGHT / 2).strength(SIMULATION_CONFIGURATION.CENTER_STRENGTH))
       .velocityDecay(0.5)
       .alphaMin(0.3);
 
@@ -232,15 +237,18 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .append('circle')
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
-      .attr('r', NODE_SIZE)
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray');
 
     this.nodes.append('text')
       .text((d: Node) => { return d.label; })
-      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('stroke', 'white')
+      .attr('stroke-width', 2)
+      .attr('paint-order', 'stroke');;
 
     // JOIN
     this.nodes = this.nodes
@@ -281,8 +289,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .attr('cy', (d: Node) => { return d.y; });
 
     this.nodes.selectAll('text')
-      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
   }
 }
 

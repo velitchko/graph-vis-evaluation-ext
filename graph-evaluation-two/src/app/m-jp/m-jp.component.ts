@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, CELL_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE } from '../config';
+import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -117,7 +117,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
     d3.selectAll(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
-      .attr('fill', 'red');
+      .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
 
     let source = ($event.currentTarget as any).id.split('-')[0];
     let target = ($event.currentTarget as any).id.split('-')[1];
@@ -125,24 +125,25 @@ export class MJpComponent implements OnInit, AfterViewInit {
     // row highlight
     d3.selectAll('.rows')
       .select(`#${source}`)
-      .attr('fill', 'red');
+      .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
 
     // column highlight
     d3.selectAll('.columns')
       .select(`#${target}`)
-      .attr('fill', 'red');
+      .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
+
     for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
       d3
         .select(`#highlighted-column-T${i}`)
         .attr('fill-opacity', 0.25)
-        .attr('x', WIDTH*(i-1) + ($event.currentTarget as any).x.baseVal.value)
+        .attr('x', MATRIX_SIZE.WIDTH*(i-1) + ($event.currentTarget as any).x.baseVal.value)
         .attr('y', 0)
         .attr('height', ($event.currentTarget as any).y.baseVal.value);
 
       d3
         .select(`#highlighted-row-T${i}`)
         .attr('fill-opacity', 0.25)
-        .attr('x', WIDTH*(i-1))
+        .attr('x', MATRIX_SIZE.WIDTH*(i-1))
         .attr('y', ($event.currentTarget as any).y.baseVal.value)
         .attr('width', ($event.currentTarget as any).x.baseVal.value);
     }
@@ -183,11 +184,37 @@ export class MJpComponent implements OnInit, AfterViewInit {
     }
   }
 
+  zoomFit() {
+    const bounds = (this.svgContainer.node() as any).getBBox();
+    
+    const fullWidth = this.width;
+    const fullHeight = this.height;
+    
+    const width = bounds.width;
+    const height = bounds.height;
+    
+    const midX = bounds.x + width / 2;
+    const midY = bounds.y + height / 2;
+
+    if (width == 0 || height == 0) return; // nothing to fit
+
+    const scale = 0.95 / Math.max(width / fullWidth, height / fullHeight);
+    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+    
+    const transform = d3.zoomIdentity
+    .translate(translate[0], 50)
+    .scale(scale);
+
+    this.g
+    .transition()
+    .duration(0) // milliseconds
+    .call(this.zoom.transform, transform);
+}
+
 
   setup(): void {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
-      .translateExtent([[-WIDTH * NUMBER_OF_TIME_SLICES, -HEIGHT], [WIDTH * NUMBER_OF_TIME_SLICES * 2, HEIGHT * 2]])
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
@@ -200,19 +227,15 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .call(this.zoom);
 
     this.g = this.svgContainer.append('g')
-      // .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
+      .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
     for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
-      this.g.append('g')
-      .attr('transform', `translate(${(i - 1)*WIDTH}, 0)`)
-      .attr('id', `T${i}`);
-
       this.g.append('rect')
         .attr('class', 'highlighted-row')
         .attr('id', `highlighted-row-T${i}`)
-        .attr('width', this.graph.nodes.length * CELL_SIZE)
-        .attr('height', CELL_SIZE)
-        .attr('fill', 'red')
+        .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
+        .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
+        .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR)
         .attr('fill-opacity', 0)
         .attr('x', 0)
         .attr('y', 0)
@@ -221,13 +244,19 @@ export class MJpComponent implements OnInit, AfterViewInit {
       this.g.append('rect')
         .attr('class', 'highlighted-column')
         .attr('id', `highlighted-column-T${i}`)
-        .attr('width', CELL_SIZE)
-        .attr('height', this.graph.nodes.length * CELL_SIZE)
-        .attr('fill', 'red')
+        .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+        .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
+        .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR)
         .attr('fill-opacity', 0)
         .attr('x', 0)
         .attr('y', 0)
         .attr('point-events', 'none');
+
+      this.g.append('g')
+      .attr('x', 0)
+      .attr('y', -50)
+      .attr('transform', `translate(${(i - 1)*MATRIX_SIZE.WIDTH}, 0)`)
+      .attr('id', `T${i}`);
     }
 
     this.highlightedRow = this.g.selectAll('highlighted-row');
@@ -278,8 +307,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
       this.g.select(`#T${i}`)
       .append('text')
       .text(`Time Step: ${i}`)
-      .attr('x', (WIDTH*(i-1)/(NUMBER_OF_TIME_SLICES*2)))
-      .attr('y', -HEIGHT / 8);
+      .attr('x', 0)
+      .attr('y', -50);
 
       this.cells = this.g.select(`#T${i}`).append('g').attr('class', 'cells').selectAll('.cell');
 
@@ -294,10 +323,10 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
       // JOIN
       this.cells
-        .attr('width', CELL_SIZE)
-        .attr('height', CELL_SIZE)
-        .attr('x', (d: Cell) => { return d.x * CELL_SIZE; })
-        .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
+        .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+        .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
+        .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
+        .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
         .attr('id', (d: Cell) => { return d.id; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
         .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i] : 0;  })
@@ -323,7 +352,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .append('text')
         .attr('id', (d: Node) => { return d.label; })
         .attr('y', (d: Node, i: number) => {
-          return i * CELL_SIZE + CELL_SIZE;
+          return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
         })
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'end')
@@ -341,11 +370,13 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('id', (d: Node) => { return d.label; })
         .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
         .attr('y', (d: Node, i: number) => {
-          return i * CELL_SIZE + CELL_SIZE;
+          return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
         })
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'start')
         .attr('font-size', FONT_SIZE);
     }
+
+    this.zoomFit();
   }
 }

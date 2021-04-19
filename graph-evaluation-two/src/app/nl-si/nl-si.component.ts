@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, NODE_SIZE, LINK_LENGTH, FONT_SIZE, SVG_MARGIN, NUMBER_OF_TIME_SLICES, TRANSITION_DURATION } from '../config';
+import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, FONT_SIZE, NUMBER_OF_TIME_SLICES } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
@@ -168,10 +168,36 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     // .attr('stroke-opacity', 1);
   }
 
+  zoomFit() {
+    const bounds = (this.svgContainer.node() as any).getBBox();
+    
+    const fullWidth = this.width;
+    const fullHeight = this.height;
+    
+    const width = bounds.width;
+    const height = bounds.height;
+    
+    const midX = bounds.x + width / 2;
+    const midY = bounds.y + height / 2;
+
+    if (width == 0 || height == 0) return; // nothing to fit
+
+    const scale = 0.95 / Math.max(width / fullWidth, height / fullHeight);
+    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+    
+    const transform = d3.zoomIdentity
+    .translate(0, 50)
+    .scale(scale);
+
+    this.g
+    .transition()
+    .duration(0) // milliseconds
+    .call(this.zoom.transform, transform);
+}
+
   setup(): void {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
-      .translateExtent([[-WIDTH, -HEIGHT], [WIDTH * 2, HEIGHT * 2]])
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
@@ -210,10 +236,10 @@ export class NlSiComponent implements OnInit, AfterViewInit {
     });
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(LINK_LENGTH).strength(.25 / NUMBER_OF_TIME_SLICES).id(d => d.id))
-      .force('collide', d3.forceCollide().strength(0.25).radius(NODE_SIZE * 2))
-      .force('charge', d3.forceManyBody().strength(-100))
-      .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(.25))
+      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(SIMULATION_CONFIGURATION.LINK_DISTANCE).strength(SIMULATION_CONFIGURATION.LINK_STRENGTH / NUMBER_OF_TIME_SLICES).id(d => d.id))
+      .force('collide', d3.forceCollide().strength(SIMULATION_CONFIGURATION.NODE_STRENGTH).radius(DISPLAY_CONFIGURATION.NODE_RADIUS * 2))
+      .force('charge', d3.forceManyBody().strength(SIMULATION_CONFIGURATION.MANYBODY_STRENGTH))
+      .force('center', d3.forceCenter(NODE_LINK_SIZE.WIDTH / 2, NODE_LINK_SIZE.HEIGHT / 2).strength(SIMULATION_CONFIGURATION.CENTER_STRENGTH))
       .velocityDecay(0.5)
       .alphaMin(0.3);
 
@@ -241,7 +267,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
         .attr('width', 50)
         .attr('height', 20)
         .attr('x', 50 * (i - 1))
-        .attr('y', HEIGHT / 2 + SVG_MARGIN.top)
+        .attr('y', 0)
         .attr('fill-opacity', 1)
         .attr('fill', this.color(i))
 
@@ -253,8 +279,8 @@ export class NlSiComponent implements OnInit, AfterViewInit {
         .attr('paint-order', 'stroke')
         .attr('stroke', 'black')
         .attr('stroke-width', 2)
-        .attr('x', 50 * (i - 1) + (FONT_SIZE * 0.8))
-        .attr('y', HEIGHT / 2 + SVG_MARGIN.top + (FONT_SIZE * 0.9));
+        .attr('x',  50 * (i - 1) + (FONT_SIZE * 0.8))
+        .attr('y', (FONT_SIZE * 0.9));
     }
 
     // UPDATE
@@ -296,15 +322,18 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .append('circle')
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
-      .attr('r', NODE_SIZE)
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray');
 
     this.nodes.append('text')
       .text((d: Node) => { return d.label; })
-      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('stroke', 'white')
+      .attr('stroke-width', 2)
+      .attr('paint-order', 'stroke');
 
     // JOIN
     this.nodes = this.nodes
@@ -321,28 +350,28 @@ export class NlSiComponent implements OnInit, AfterViewInit {
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.source as Node).x + Math.sin(angle - Math.PI) * (idx * 2 - NODE_SIZE / 2);
+        return (d.source as Node).x + Math.sin(angle - Math.PI) * (idx * 2 - DISPLAY_CONFIGURATION.NODE_RADIUS / 2);
       })
       .attr('y1', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.source as Node).y + Math.cos(angle) * (idx * 2 - NODE_SIZE / 2);
+        return (d.source as Node).y + Math.cos(angle) * (idx * 2 - DISPLAY_CONFIGURATION.NODE_RADIUS / 2);
       })
       .attr('x2', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.target as Node).x + Math.sin(angle - Math.PI) * (idx * 2 - NODE_SIZE / 2);
+        return (d.target as Node).x + Math.sin(angle - Math.PI) * (idx * 2 - DISPLAY_CONFIGURATION.NODE_RADIUS / 2);
       })
       .attr('y2', (d: Link<Node>, i: number) => {
         let idx = i % 4;
         let dx = (d.target as Node).x - (d.source as Node).x;
         let dy = (d.target as Node).y - (d.source as Node).y;
         let angle = Math.atan2(dy, dx);
-        return (d.target as Node).y + Math.cos(angle) * (idx * 2 - NODE_SIZE / 2);
+        return (d.target as Node).y + Math.cos(angle) * (idx * 2 - DISPLAY_CONFIGURATION.NODE_RADIUS / 2);
       });
 
     this.nodes.selectAll('circle')
@@ -350,8 +379,9 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .attr('cy', (d: Node) => { return d.y; });
 
     this.nodes.selectAll('text')
-      .attr('x', (d: Node) => { return d.x + NODE_SIZE; })
-      .attr('y', (d: Node) => { return d.y + NODE_SIZE; });
+      .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
   }
+
 }
 

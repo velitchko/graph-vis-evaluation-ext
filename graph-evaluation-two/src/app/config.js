@@ -16,20 +16,21 @@ export const CELL_SIZE = 16;
 export const FONT_SIZE = 18;
 
 export const MATRIX_SIZE = {
-    WIDTH: 100, // placeholder
-    HEIGHT: 100 // placeholder
+    WIDTH: 800, // placeholder
+    HEIGHT: 800 // placeholder
 };
 
 export const NODE_LINK_SIZE = {
-    WIDTH: 100, // placeholder
-    HEIGHT: 100 // placeholder
+    WIDTH: 840, // placeholder
+    HEIGHT: 640 // placeholder
 };
 
 export const SIMULATION_CONFIGURATION = {
-    LINK_DISTANCE: 1, // placeholder
-    LINK_STRENGTH: 1, // placeholder
-    NODE_STRENGTH: 1, // placeholder
-    MANYBODY_STRENGTH: 1 // placeholder
+    LINK_DISTANCE: 80, // placeholder
+    LINK_STRENGTH: .25, // placeholder
+    NODE_STRENGTH: .25, // placeholder
+    MANYBODY_STRENGTH: -100, // placeholder
+    CENTER_STRENGTH: 0.5
 };
 
 export const DISPLAY_CONFIGURATION = {
@@ -37,14 +38,15 @@ export const DISPLAY_CONFIGURATION = {
     LINK_OPACITY_DEFAULT: 1, // placeholder
     LINK_OPACITY_HIDDEN: 0, // placeholder
     LINK_OPACITY_FADED: 0.25,  // placeholder
-    NODE_RADIUS: 1, // placeholder
+    NODE_RADIUS: 6, // placeholder
     NODE_BORDER: 1,  // placeholder
     ROW_COL_HIGHLIGHT_COLOR: '#ff0000', // placeholder
-    CELL_BORDER_SIZE: 1 // placeholder
+    CELL_BORDER_SIZE: 1, // placeholder
+    CELL_SIZE: 16 // placeholder
 };
 
 export const SVG_MARGIN = {
-    top: 50, 
+    top: 65, 
     right: 20, 
     bottom: 20, 
     left: 50

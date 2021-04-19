@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, CELL_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE } from '../config';
+import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -153,7 +153,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.highlightedColumn
       .attr('fill-opacity', 0.25)
-      .attr('x', ($event.currentTarget as any).x.baseVal.value - (CELL_SIZE / NUMBER_OF_TIME_SLICES * time))
+      .attr('x', ($event.currentTarget as any).x.baseVal.value - (DISPLAY_CONFIGURATION.CELL_SIZE / NUMBER_OF_TIME_SLICES * time))
       .attr('y', 0)
       .attr('height', ($event.currentTarget as any).y.baseVal.value);
 
@@ -204,7 +204,6 @@ export class MSiComponent implements OnInit, AfterViewInit {
   setup(): void {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
-      .translateExtent([[-WIDTH, -HEIGHT], [WIDTH * 2, HEIGHT * 2]])
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
@@ -223,7 +222,9 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .selectAll('rect');
 
     this.g = this.svgContainer.append('g')
-      .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
+      .attr('width', MATRIX_SIZE.WIDTH)
+      .attr('height', MATRIX_SIZE.HEIGHT)
+      .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top + 10})`);
 
     // BACKGROUND FOR BORDER
     this.background = this.g.append('g')
@@ -232,8 +233,8 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.highlightedRow = this.g.append('rect')
       .attr('class', 'highlighted-row')
-      .attr('width', this.graph.nodes.length * CELL_SIZE)
-      .attr('height', CELL_SIZE)
+      .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
       .attr('fill', 'red')
       .attr('fill-opacity', 0)
       .attr('x', 0)
@@ -242,8 +243,8 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.highlightedColumn = this.g.append('rect')
       .attr('class', 'highlighted-column')
-      .attr('width', CELL_SIZE)
-      .attr('height', this.graph.nodes.length * CELL_SIZE)
+      .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
       .attr('fill', 'red')
       .attr('fill-opacity', 0)
       .attr('x', 0)
@@ -301,10 +302,10 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .enter()
       .append('rect')
       .attr('id', (d: Cell) => { return d.id; })
-      .attr('x', (d: Cell) => { return d.x * CELL_SIZE; })
-      .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
-      .attr('width', CELL_SIZE) // stroke size * 2
-      .attr('height', CELL_SIZE)
+      .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE) // stroke size * 2
+      .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
       .attr('fill', 'transparent')
       .attr('stroke', '#999')
       .attr('stroke-width', '1px')
@@ -316,8 +317,8 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .enter()
       .append('g')
       .attr('class', 'cell')
-      .attr('width', CELL_SIZE)
-      .attr('height', CELL_SIZE);
+      .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE);
 
     this.legend = this.legend.data([1]);
 
@@ -332,7 +333,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
         .attr('width', 50)
         .attr('height', 20)
         .attr('x', 50 * (i - 1))
-        .attr('y', HEIGHT / 2 + SVG_MARGIN.top)
+        .attr('y', 0)
         .attr('fill-opacity', 1)
         .attr('fill', this.color(i))
 
@@ -345,16 +346,16 @@ export class MSiComponent implements OnInit, AfterViewInit {
         .attr('stroke', 'black')
         .attr('stroke-width', 2)
         .attr('x', 50 * (i - 1) + (FONT_SIZE * 0.8))
-        .attr('y', HEIGHT / 2 + SVG_MARGIN.top + (FONT_SIZE * 0.9));
+        .attr('y', (FONT_SIZE * 0.9));
 
       this.cells
         .append('rect')
-        .attr('width', (CELL_SIZE / NUMBER_OF_TIME_SLICES))
-        .attr('height', CELL_SIZE)
+        .attr('width', (DISPLAY_CONFIGURATION.CELL_SIZE / NUMBER_OF_TIME_SLICES))
+        .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
         .attr('id', (d: Cell) => { return d.id; })
         .attr('time', i - 1)
-        .attr('x', (d: Cell) => { return d.x * CELL_SIZE + (i - 1) * (CELL_SIZE / NUMBER_OF_TIME_SLICES); })
-        .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
+        .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE + (i - 1) * (DISPLAY_CONFIGURATION.CELL_SIZE / NUMBER_OF_TIME_SLICES); })
+        .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
         .attr('id', (d: Cell) => { return d.id; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
         .attr('fill-opacity', (d: any) => { return d.link ? 1 : 0; })
@@ -379,7 +380,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .append('text')
       .attr('id', (d: Node) => { return d.label; })
       .attr('y', (d: any, i: number) => {
-        return i * CELL_SIZE + CELL_SIZE;
+        return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
       })
       .text((d: any) => { return d.label; })
       .attr('text-anchor', 'end')
@@ -395,7 +396,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('id', (d: Node) => { return d.label; })
       .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
       .attr('y', (d: any, i: number) => {
-        return i * CELL_SIZE + CELL_SIZE;
+        return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
       })
       .text((d: any) => { return d.label; })
       .attr('text-anchor', 'start')

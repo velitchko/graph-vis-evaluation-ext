@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { WIDTH, HEIGHT, CELL_SIZE, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
+import { DISPLAY_CONFIGURATION, MATRIX_SIZE, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -38,10 +38,16 @@ export class MTlComponent implements OnInit, AfterViewInit {
   private width: number;
   private height: number;
 
+  sliderWidth: string;
+
   value: number = 1;
   options: Options = {
     floor: 1,
-    ceil: 4
+    ceil: 4,
+    ticksArray: [1, 2, 3, 4],
+    translate: (value: number): string => {
+      return `Time: ${value}`;
+    }
   };
 
   constructor(private ds: DataService, private route: ActivatedRoute) {
@@ -52,6 +58,8 @@ export class MTlComponent implements OnInit, AfterViewInit {
       highlights: 0
     };
     this.interactionSwitch = false;
+
+    this.sliderWidth = `${MATRIX_SIZE.WIDTH}px`;
   }
 
   ngOnInit(): void {
@@ -179,7 +187,6 @@ export class MTlComponent implements OnInit, AfterViewInit {
   setup(): void {
     this.zoom = d3.zoom()
     .scaleExtent([0.1, 10])
-    .translateExtent([[-WIDTH, -HEIGHT], [WIDTH * 2, HEIGHT * 2]])
     .on('start', this.zoomStart.bind(this))
     .on('zoom', this.zooming.bind(this))
     .on('end', this.zoomEnd.bind(this));
@@ -197,8 +204,8 @@ export class MTlComponent implements OnInit, AfterViewInit {
       
     this.highlightedRow = this.g.append('rect')
     .attr('class', 'highlighted-row')
-    .attr('width', this.graph.nodes.length * CELL_SIZE)
-    .attr('height', CELL_SIZE)
+    .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
+    .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
     .attr('fill', 'red')
     .attr('fill-opacity', 0)
     .attr('x', 0)
@@ -207,8 +214,8 @@ export class MTlComponent implements OnInit, AfterViewInit {
 
   this.highlightedColumn = this.g.append('rect')
     .attr('class', 'highlighted-column')
-    .attr('width', CELL_SIZE)
-    .attr('height', this.graph.nodes.length * CELL_SIZE)
+    .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+    .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
     .attr('fill', 'red')
     .attr('fill-opacity', 0)
     .attr('x', 0)
@@ -279,10 +286,10 @@ export class MTlComponent implements OnInit, AfterViewInit {
 
     // JOIN
     this.cells
-      .attr('width', CELL_SIZE)
-      .attr('height', CELL_SIZE)
-      .attr('x', (d: Cell) => { return d.x * CELL_SIZE; })
-      .attr('y', (d: Cell) => { return d.y * CELL_SIZE; })
+      .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('id', (d: Cell) => { return d.id; })
       .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
       .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[0] : 0; })
@@ -306,7 +313,7 @@ export class MTlComponent implements OnInit, AfterViewInit {
       .append('text')
       .attr('id', (d: Node) => { return d.label; })
       .attr('y', (d: Node, i: number) => {
-        return i * CELL_SIZE + CELL_SIZE;
+        return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
       })
       .text((d: Node) => { return d.label; })
       .attr('text-anchor', 'end')
@@ -322,7 +329,7 @@ export class MTlComponent implements OnInit, AfterViewInit {
       .attr('id', (d: Node) => { return d.label; })
       .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
       .attr('y', (d: Node, i: number) => {
-        return i * CELL_SIZE + CELL_SIZE;
+        return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
       })
       .text((d: Node) => { return d.label; })
       .attr('text-anchor', 'start')
