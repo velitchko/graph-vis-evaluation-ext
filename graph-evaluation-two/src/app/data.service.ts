@@ -70,31 +70,31 @@ export class DataService {
 
   constructor() { 
     // No Clique
-    this.graph_one = SFG_35_52;
-    this.graph_two = SFG_36_46;
-    this.graph_three = SFG_37_48;
-    this.graph_four = SFG_39_53;
-    this.graph_five = SFG_40_53;
-    this.graph_six = SFG_40_54;
-    this.graph_seven = SFG_41_57;
-    this.graph_eight = SFG_42_61;
-    this.graph_nine = SFG_43_54;
-    this.graph_ten = SFG_43_55;
-    this.graph_eleven = SFG_44_60;
-    this.graph_twelve = SFG_45_56;
+    this.graph_one = SFG_35_52;                     // NL/M T1 JP SINGLE
+    this.graph_two = SFG_36_46;                     // NL/M T1 SI SINGLE
+    this.graph_three = SFG_37_48;                   // NL/M T1 AN SINGLE
+    this.graph_four = SFG_39_53;                    // NL/M T1 TL SINGLE
+    this.graph_five = SFG_40_53;                    // NL/M T2 JP SINGLE
+    this.graph_six = SFG_40_54;                     // NL/M T2 SI SINGLE
+    this.graph_seven = SFG_41_57;                   // NL/M T2 AN SINGLE
+    this.graph_eight = SFG_42_61;                   // NL/M T2 TL SINGLE
+    this.graph_nine = SFG_43_54;                    // NL/M T3 JP SINGLE
+    this.graph_ten = SFG_43_55;                     // NL/M T3 SI SINGLE
+    this.graph_eleven = SFG_44_60;                  // NL/M T3 AN SINGLE
+    this.graph_twelve = SFG_45_56;                  // NL/M T3 TL SINGLE
     // Clique
-    this.graph_thirteen = SFG_35_55_clique;
-    this.graph_fourteen = SFG_37_60_clique;
-    this.graph_fifteen = SFG_38_52_clique;
-    this.graph_sixteen = SFG_38_66_clique;
-    this.graph_seventeen = SFG_39_62_clique;
-    this.graph_eighteen = SFG_40_63_clique;
-    this.graph_nineteen = SFG_41_69_clique;
-    this.graph_twenty = SFG_42_66_clique;
-    this.graph_twentyone = SFG_43_70_clique;
-    this.graph_twentytwo = SFG_44_63_clique;
-    this.graph_twentythree = SFG_45_70_clique;
-    this.graph_twentyfour = SFG_45_71_clique;
+    this.graph_thirteen = SFG_35_55_clique;         // NL/M T1 JP CLIQUE
+    this.graph_fourteen = SFG_37_60_clique;         // NL/M T1 SI CLIQUE
+    this.graph_fifteen = SFG_38_52_clique;          // NL/M T1 AN CLIQUE
+    this.graph_sixteen = SFG_38_66_clique;          // NL/M T1 TL CLIQUE
+    this.graph_seventeen = SFG_39_62_clique;        // NL/M T2 JP CLIQUE
+    this.graph_eighteen = SFG_40_63_clique;         // NL/M T2 SI CLIQUE
+    this.graph_nineteen = SFG_41_69_clique;         // NL/M T2 AN CLIQUE
+    this.graph_twenty = SFG_42_66_clique;           // NL/M T2 TL CLIQUE
+    this.graph_twentyone = SFG_43_70_clique;        // NL/M T3 JP CLIQUE
+    this.graph_twentytwo = SFG_44_63_clique;        // NL/M T3 SI CLIQUE
+    this.graph_twentythree = SFG_45_70_clique;      // NL/M T3 AN CLIQUE
+    this.graph_twentyfour = SFG_45_71_clique;       // NL/M T3 TL CLIQUE
   }
 
   getGraph(graph: string): Graph {
