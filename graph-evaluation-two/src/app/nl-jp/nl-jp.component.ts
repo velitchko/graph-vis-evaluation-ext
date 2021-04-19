@@ -72,13 +72,14 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     if (this.graph) {
       this.setup();
       this.init();
+      this.zoomFit();
     }
 
   }
 
   zoomStart(): void {
+    console.log(this.interactionSwitch);
     if (!this.interactionSwitch) return; // no interaction for you
-
     this.zoomStartTime = Date.now();
   }
 
@@ -151,21 +152,12 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     const width = bounds.width;
     const height = bounds.height;
   
-    console.log(fullWidth, fullHeight);
-    console.log(width, height);
-    
     if (width == 0 || height == 0) return; // nothing to fit
 
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
     
-    const transform = d3.zoomIdentity
-    .translate(0, 50)
-    .scale(scale);
-
     this.g
-    .transition()
-    .duration(0) // milliseconds
-    .call(this.zoom.transform, transform);
+    .attr('transform', `scale(${scale})`);
 }
 
   setup(): void {
@@ -279,7 +271,6 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       // EXIT
       this.links.exit().remove();
     }
-    this.zoomFit();
   }
 
   render(): void {

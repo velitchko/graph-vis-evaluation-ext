@@ -201,14 +201,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
     const scale = 0.95 / Math.max(width / fullWidth, height / fullHeight);
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
     
-    const transform = d3.zoomIdentity
-    .translate(translate[0], 50)
-    .scale(scale);
-
     this.g
-    .transition()
-    .duration(0) // milliseconds
-    .call(this.zoom.transform, transform);
+    .attr('transform', `scale(${scale}) translate(0, 100)`);
 }
 
 
