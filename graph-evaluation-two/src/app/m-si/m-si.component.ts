@@ -87,14 +87,20 @@ export class MSiComponent implements OnInit, AfterViewInit {
   }
 
   zoomStart(): void {
+    if(!this.interactionSwitch) return;
+
     this.zoomStartTime = Date.now();
   }
 
   zooming($event: any): void {
+    if(!this.interactionSwitch) return;
+
     this.g.attr('transform', $event.transform);
   }
 
   zoomEnd(): void {
+    if(!this.interactionSwitch) return;
+    
     this.zoomEndTime = Date.now();
 
     const zoomTime = this.zoomEndTime - this.zoomStartTime;

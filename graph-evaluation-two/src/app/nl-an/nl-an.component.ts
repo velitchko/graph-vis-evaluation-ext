@@ -66,7 +66,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
-        this.interactionSwitch = (params['interactions'] as boolean);
+        this.interactionSwitch = params['interactions'] === 'true' ? true : false;
       });
   }
 
@@ -115,6 +115,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
   zoomStart(): void {
     if(!this.interactionSwitch) return; // no interaction for you
+    
     this.zoomStartTime = Date.now();
   }
 

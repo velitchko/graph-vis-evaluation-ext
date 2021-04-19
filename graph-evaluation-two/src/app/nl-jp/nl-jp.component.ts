@@ -61,7 +61,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
-        this.interactionSwitch = (params['interactions'] as boolean);
+        this.interactionSwitch = params['interactions'] === 'true' ? true : false;
       });
   }
 
@@ -77,14 +77,20 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   zoomStart(): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
     this.zoomStartTime = Date.now();
   }
 
   zooming($event: any): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
     this.g.attr('transform', $event.transform);
   }
 
   zoomEnd(): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
     this.zoomEndTime = Date.now();
 
     const zoomTime = this.zoomEndTime - this.zoomStartTime;
@@ -99,6 +105,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
     this.dragStartTime = Date.now();
 
     $event.subject.fx = $event.subject.x;
@@ -107,12 +115,16 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
 
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if (!this.interactionSwitch) return; // no interaction for you
+    
     this.dragEndTime = Date.now();
 
     const dragTime = this.dragEndTime - this.dragStartTime;
