@@ -66,7 +66,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
-        this.interactionSwitch = (params['interactions'] as boolean);
+        this.interactionSwitch = params['interactions'] === 'true' ? true : false;
       });
   }
 
