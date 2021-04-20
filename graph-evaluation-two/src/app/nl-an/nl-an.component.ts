@@ -43,6 +43,8 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   private animationHandle: any; // animation timer handler
   customAnimationSpeed: number;
 
+  animationStarted: boolean;
+
   value: number = 1;
 
   options: Options = {
@@ -59,6 +61,8 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     };
     this.interactionSwitch = false;
     this.customAnimationSpeed = ANIMATION_DURATION;
+
+    this.animationStarted = false;
   }
 
   ngOnInit(): void {
@@ -90,6 +94,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   start(): void {
+    this.animationStarted = true;
     this.animate();
   }
 

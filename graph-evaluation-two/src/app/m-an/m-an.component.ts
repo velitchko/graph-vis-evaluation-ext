@@ -42,6 +42,8 @@ export class MAnComponent implements OnInit, AfterViewInit {
   private animationHandle: any; // animation timer handler
   customAnimationSpeed: number;
 
+  animationStarted: boolean;
+
   value: number = 1;
   options: Options = {
     floor: 1,
@@ -58,6 +60,8 @@ export class MAnComponent implements OnInit, AfterViewInit {
     };
     this.interactionSwitch = false;
     this.customAnimationSpeed = ANIMATION_DURATION;
+
+    this.animationStarted = false;
   }
 
   ngOnInit(): void {
@@ -96,6 +100,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   start(): void {
+    this.animationStarted = true;
     this.animate();
   }
 
