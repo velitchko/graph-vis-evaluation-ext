@@ -7,9 +7,9 @@ export const LINK_LENGTH = 80;
 
 export const TRANSITION_DURATION = 750;
 
-export const ANIMATION_DURATION = 5000;
+export const ANIMATION_DURATION = 3000;
 export const ANIMATION_INCREMENT = 1000;
-export const ANIMATION_UPPER_BOUND = 10000;
+export const ANIMATION_UPPER_BOUND = 7000;
 export const ANIMATION_LOWER_BOUND = 1000;
 
 export const CELL_SIZE = 16;
@@ -30,7 +30,10 @@ export const SIMULATION_CONFIGURATION = {
     LINK_STRENGTH: .25, // placeholder
     NODE_STRENGTH: .25, // placeholder
     MANYBODY_STRENGTH: -100, // placeholder
-    CENTER_STRENGTH: 0.5
+    CENTER_STRENGTH: 0.5,
+    ALPHA: 0.3,
+    ALPHA_TARGET: 0.8,
+    VELOCITY_DECAY: 0.5
 };
 
 export const DISPLAY_CONFIGURATION = {

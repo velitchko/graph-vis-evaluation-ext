@@ -240,15 +240,15 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .force('collide', d3.forceCollide().strength(SIMULATION_CONFIGURATION.NODE_STRENGTH).radius(DISPLAY_CONFIGURATION.NODE_RADIUS * 2))
       .force('charge', d3.forceManyBody().strength(SIMULATION_CONFIGURATION.MANYBODY_STRENGTH))
       .force('center', d3.forceCenter(NODE_LINK_SIZE.WIDTH / 2, NODE_LINK_SIZE.HEIGHT / 2).strength(SIMULATION_CONFIGURATION.CENTER_STRENGTH))
-      .velocityDecay(0.5)
-      .alphaMin(0.3);
+      .velocityDecay(SIMULATION_CONFIGURATION.VELOCITY_DECAY)
+      .alphaMin(SIMULATION_CONFIGURATION.ALPHA);
 
     this.simulation.on('tick', () => {
       this.render();
     });
 
     // Compute Simulation Based on SUPERGRAPH 💪
-    this.simulation.alphaTarget(0.3).restart();
+    this.simulation.alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET).restart();
 
     this.links = this.g.append('g').attr('class', 'links').selectAll('.link');
     this.nodes = this.g.append('g').attr('class', 'nodes').selectAll('.node');
