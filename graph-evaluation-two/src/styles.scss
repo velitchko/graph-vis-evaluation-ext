@@ -8,3 +8,10 @@ svg {
 }
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
+
+
+.btn-light.disabled, .btn-light:disabled,
+.btn.disabled, .btn:disabled  {
+    color: #9d9d9d !important;
+    opacity: 0.25 !important;
+}
