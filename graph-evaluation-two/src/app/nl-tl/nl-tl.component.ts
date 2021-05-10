@@ -35,7 +35,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   private dragEndTime: number;
 
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
-  private interactions: { zooms: number, drags: number }; // number of zooms, drags
+  private interactions: { zooms: number, drags: number, slider: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
@@ -56,7 +56,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
-      drags: 0
+      drags: 0,
+      slider: 0
     };
     this.interactionSwitch = false;
     this.sliderWidth = `${NODE_LINK_SIZE.WIDTH}px`;
@@ -189,6 +190,15 @@ export class NlTlComponent implements OnInit, AfterViewInit {
 
   update($event: number): void {
     if (!this.graph) return;
+
+    this.timers.push({
+      type: 'slider',
+      time: 0
+    });
+
+    this.interactions.slider++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
 
     this.nodes
       .selectAll('circle')

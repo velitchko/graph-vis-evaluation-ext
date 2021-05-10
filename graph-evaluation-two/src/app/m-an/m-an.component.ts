@@ -33,7 +33,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
 
 
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
-  private interactions: { zooms: number, highlights: number }; // number of zooms, drags
+  private interactions: { zooms: number, highlights: number, faster: number, slower: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
@@ -56,7 +56,9 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
-      highlights: 0
+      highlights: 0,
+      faster: 0,
+      slower: 0
     };
     this.interactionSwitch = false;
     this.customAnimationSpeed = ANIMATION_DURATION;
@@ -108,6 +110,16 @@ export class MAnComponent implements OnInit, AfterViewInit {
     if (this.customAnimationSpeed - ANIMATION_INCREMENT >= ANIMATION_LOWER_BOUND) {
       this.customAnimationSpeed -= ANIMATION_INCREMENT;
     }
+
+    this.timers.push({
+      type: 'faster',
+      time: 0
+    });
+
+    this.interactions.faster++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
     this.restart();
   }
 
@@ -115,6 +127,16 @@ export class MAnComponent implements OnInit, AfterViewInit {
     if (this.customAnimationSpeed + ANIMATION_INCREMENT <= ANIMATION_UPPER_BOUND) {
       this.customAnimationSpeed += ANIMATION_INCREMENT;
     }
+
+    this.timers.push({
+      type: 'slower',
+      time: 0
+    });
+
+    this.interactions.slower++;
+    
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
     this.restart();
   }
 

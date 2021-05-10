@@ -34,7 +34,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   private dragEndTime: number;
 
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
-  private interactions: { zooms: number, drags: number }; // number of zooms, drags
+  private interactions: { zooms: number, drags: number, faster: number, slower: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
@@ -57,7 +57,9 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
-      drags: 0
+      drags: 0,
+      faster: 0,
+      slower: 0
     };
     this.interactionSwitch = false;
     this.customAnimationSpeed = ANIMATION_DURATION;
@@ -102,6 +104,16 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     if (this.customAnimationSpeed + ANIMATION_INCREMENT <= ANIMATION_UPPER_BOUND) {
       this.customAnimationSpeed += ANIMATION_INCREMENT;
     }
+    
+    this.timers.push({
+      type: 'slower',
+      time: 0
+    });
+
+    this.interactions.slower++;
+    
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
     this.restart();
   }
 
@@ -109,6 +121,16 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     if (this.customAnimationSpeed - ANIMATION_INCREMENT >= ANIMATION_LOWER_BOUND) {
       this.customAnimationSpeed -= ANIMATION_INCREMENT;
     }
+
+    this.timers.push({
+      type: 'slower',
+      time: 0
+    });
+
+    this.interactions.slower++;
+    
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
     this.restart();
   }
 

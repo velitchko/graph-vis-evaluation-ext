@@ -33,7 +33,7 @@ export class MTlComponent implements OnInit, AfterViewInit {
   private highlightEndTime: number;
   
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
-  private interactions: { zooms: number, highlights: number }; // number of zooms, drags
+  private interactions: { zooms: number, highlights: number, slider: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
@@ -55,7 +55,8 @@ export class MTlComponent implements OnInit, AfterViewInit {
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
       zooms: 0,
-      highlights: 0
+      highlights: 0,
+      slider: 0
     };
     this.interactionSwitch = false;
 
@@ -261,6 +262,17 @@ export class MTlComponent implements OnInit, AfterViewInit {
   }
 
   update($event: number): void {
+    if (!this.graph) return;
+
+    this.timers.push({
+      type: 'slider',
+      time: 0
+    });
+
+    this.interactions.slider++;
+    
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+    
     // CELLS
     this.cells
       .transition()
