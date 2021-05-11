@@ -8,9 +8,9 @@ import SFG_40_53 from '../assets/SFG_40_53.json';
 import SFG_40_54 from '../assets/SFG_40_54.json';
 import SFG_41_57 from '../assets/SFG_41_57.json';
 import SFG_42_61 from '../assets/SFG_42_61.json';
-import SFG_43_54 from '../assets/SFG_43_54.json';
-import SFG_43_55 from '../assets/SFG_43_55.json';
-import SFG_44_60 from '../assets/SFG_44_60.json';
+import SFG_43_53 from '../assets/SFG_43_53.json';
+import SFG_43_54_1 from '../assets/SFG_43_54_1.json';
+import SFG_44_59 from '../assets/SFG_44_59.json';
 import SFG_45_56 from '../assets/SFG_45_56.json';
 // Clique
 import SFG_35_55_clique from '../assets/SFG_35_55_clique.json';
@@ -78,9 +78,9 @@ export class DataService {
     this.graph_six = SFG_40_54;                     // NL/M T2 SI SINGLE
     this.graph_seven = SFG_41_57;                   // NL/M T2 AN SINGLE
     this.graph_eight = SFG_42_61;                   // NL/M T2 TL SINGLE
-    this.graph_nine = SFG_43_54;                    // NL/M T3 JP SINGLE
-    this.graph_ten = SFG_43_55;                     // NL/M T3 SI SINGLE
-    this.graph_eleven = SFG_44_60;                  // NL/M T3 AN SINGLE
+    this.graph_nine = SFG_43_53;                    // NL/M T3 JP SINGLE
+    this.graph_ten = SFG_43_54_1;                   // NL/M T3 SI SINGLE
+    this.graph_eleven = SFG_44_59;                  // NL/M T3 AN SINGLE
     this.graph_twelve = SFG_45_56;                  // NL/M T3 TL SINGLE
     // Clique
     this.graph_thirteen = SFG_35_55_clique;         // NL/M T1 JP CLIQUE
