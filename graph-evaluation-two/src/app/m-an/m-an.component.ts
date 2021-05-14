@@ -134,7 +134,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
     });
 
     this.interactions.slower++;
-    
+
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
 
     this.restart();
@@ -147,21 +147,21 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   zoomStart(): void {
-    if(!this.interactionSwitch) return;
+    if (!this.interactionSwitch) return;
 
     this.zoomStartTime = Date.now();
   }
 
   zooming($event: any): void {
-    if(!this.interactionSwitch) return;
+    if (!this.interactionSwitch) return;
     console.log('zooming');
     console.log($event.transform);
     this.g.attr('transform', $event.transform);
   }
 
   zoomEnd(): void {
-    if(!this.interactionSwitch) return;
-    
+    if (!this.interactionSwitch) return;
+
     this.zoomEndTime = Date.now();
 
     const zoomTime = this.zoomEndTime - this.zoomStartTime;
@@ -176,13 +176,13 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: Event): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
 
-    if(!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+    if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
     d3.select(($event.currentTarget as any))
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
@@ -214,7 +214,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   mouseOut($event: Event): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     $event.preventDefault();
 
@@ -232,13 +232,13 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.highlightedRow
       .attr('fill-opacity', 0);
 
-    if(+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
+    if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
       const highlightTime = this.highlightEndTime - this.highlightStartTime;
       this.timers.push({
         type: 'highlight',
         time: highlightTime
       });
-  
+
       this.interactions.highlights++;
       parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
     }
@@ -261,8 +261,10 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
-    this.g.append('g')
-      .attr('id', 'time');
+    this.svgContainer.append('g')
+      .attr('id', 'time')
+      .attr('width', 200)
+      .attr('height', 200);
 
     this.highlightedRow = this.g.append('rect')
       .attr('class', 'highlighted-row')
@@ -331,7 +333,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
         return d.link ? d.time[$event - 1] : 0;
       });
 
-    this.g.select('#time')
+    this.svgContainer.select('#time')
       .select('text')
       .text(`Time: T${$event}`);
   }
@@ -344,7 +346,9 @@ export class MAnComponent implements OnInit, AfterViewInit {
       .append('text')
       .text('Time: T1')
       .attr('x', 0)
-      .attr('y', -50);
+      .attr('y', -50)
+      .attr('font-size', 24)
+      .attr('font-weight', 'bold');
 
     // UPDATE
     this.cells = this.cells.data(this.matrix);

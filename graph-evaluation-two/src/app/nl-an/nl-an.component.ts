@@ -104,14 +104,14 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     if (this.customAnimationSpeed + ANIMATION_INCREMENT <= ANIMATION_UPPER_BOUND) {
       this.customAnimationSpeed += ANIMATION_INCREMENT;
     }
-    
+
     this.timers.push({
       type: 'slower',
       time: 0
     });
 
     this.interactions.slower++;
-    
+
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
 
     this.restart();
@@ -128,7 +128,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     });
 
     this.interactions.slower++;
-    
+
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
 
     this.restart();
@@ -141,19 +141,19 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   zoomStart(): void {
-    if(!this.interactionSwitch) return; // no interaction for you
-    
+    if (!this.interactionSwitch) return; // no interaction for you
+
     this.zoomStartTime = Date.now();
   }
 
   zooming($event: any): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     this.g.attr('transform', $event.transform);
   }
 
   zoomEnd(): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     this.zoomEndTime = Date.now();
 
@@ -169,7 +169,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     this.dragStartTime = Date.now();
 
@@ -179,7 +179,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
@@ -187,7 +187,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if(!this.interactionSwitch) return; // no interaction for you
+    if (!this.interactionSwitch) return; // no interaction for you
 
     this.dragEndTime = Date.now();
 
@@ -226,8 +226,10 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
     this.g = this.svgContainer.append('g');
 
-    this.g.append('g')
-      .attr('id', 'time');
+    this.svgContainer.append('g')
+      .attr('id', 'time')
+      .attr('width', 200)
+      .attr('height', 200);
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
       .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(SIMULATION_CONFIGURATION.LINK_DISTANCE).strength(SIMULATION_CONFIGURATION.LINK_STRENGTH).id(d => d.id))
@@ -249,6 +251,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   update($event: number): void {
+    console.log($event);
     if (!this.graph) return;
 
     this.nodes
@@ -256,39 +259,41 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
-      // .attr('opacity', (d: any) => {
-      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-      //   return d.time === $event ? 1 : 0;
-      // });
+    // .attr('opacity', (d: any) => {
+    //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+    //   return d.time === $event ? 1 : 0;
+    // });
 
     this.nodes
       .selectAll('text')
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
-      // .attr('opacity', (d: any) => {
-      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-      //   return d.time === $event ? 1 : 0;
-      // });
+    // .attr('opacity', (d: any) => {
+    //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+    //   return d.time === $event ? 1 : 0;
+    // });
 
     this.links
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('opacity', (d: Link<Node>) => { return d.time[$event - 1]; });
+      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[$event - 1]; });
 
-      
-    this.g.select('#time')
-    .select('text')
-    .text(`Time: T${$event}`);
+
+    this.svgContainer.select('#time')
+      .select('text')
+      .text(`Time: T${$event}`);
   }
 
   init(): void {
-    this.g.select('#time')
+    this.svgContainer.select('#time')
       .append('text')
       .text('Time: T1')
       .attr('x', 0)
-      .attr('y', 50);
+      .attr('y', 50)
+      .attr('font-size', 24)
+      .attr('font-weight', 'bold');
 
     // UPDATE
     this.nodes = this.nodes.data(this.graph.nodes);
