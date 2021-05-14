@@ -342,11 +342,11 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
 
-    this.g.select('#time')
+    this.svgContainer.select('#time')
       .append('text')
       .text('Time: T1')
       .attr('x', 0)
-      .attr('y', -50)
+      .attr('y', 20)
       .attr('font-size', 24)
       .attr('font-weight', 'bold');
 
