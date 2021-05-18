@@ -263,7 +263,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .append('line')
         .attr('class', 'link')
         .attr('stroke', 'darkgray')
-        .attr('stroke-opacity', 1)
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i-1]; })
         .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH);
   
       // JOIN
@@ -281,7 +281,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.links = this.g.select(`#T${i}`).selectAll('.link');
 
       this.links
-        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i]; })
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i-1]; })
         .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
         .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
         .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
