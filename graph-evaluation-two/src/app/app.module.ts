@@ -16,7 +16,7 @@ import { MAnComponent } from './m-an/m-an.component';
 import { DataService } from './data.service';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxBootstrapIconsModule, allIcons  } from 'ngx-bootstrap-icons';
+import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
 @NgModule({
