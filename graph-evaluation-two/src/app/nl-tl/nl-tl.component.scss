@@ -6,3 +6,8 @@
         overflow: visible;
     }
 }
+
+::ng-deep .ngx-slider-model-value {
+    font-size: 24px;
+    font-weight: bold;
+}
