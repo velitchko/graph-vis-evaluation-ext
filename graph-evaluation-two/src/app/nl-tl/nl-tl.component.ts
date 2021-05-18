@@ -114,11 +114,14 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
     if (!this.interactionSwitch) return; // no interaction for you
 
+    this.simulation
+      .alpha(SIMULATION_CONFIGURATION.ALPHA)
+      .restart();
+
     this.dragStartTime = Date.now();
 
     $event.subject.fx = $event.subject.x;
     $event.subject.fy = $event.subject.y;
-
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
@@ -126,7 +129,6 @@ export class NlTlComponent implements OnInit, AfterViewInit {
 
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
-
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
@@ -175,14 +177,17 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .force('charge', d3.forceManyBody().strength(SIMULATION_CONFIGURATION.MANYBODY_STRENGTH))
       .force('center', d3.forceCenter(NODE_LINK_SIZE.WIDTH / 2, NODE_LINK_SIZE.HEIGHT / 2).strength(SIMULATION_CONFIGURATION.CENTER_STRENGTH))
       .velocityDecay(SIMULATION_CONFIGURATION.VELOCITY_DECAY)
-      .alphaMin(SIMULATION_CONFIGURATION.ALPHA);
+      .alpha(SIMULATION_CONFIGURATION.ALPHA)
+      .alphaMin(SIMULATION_CONFIGURATION.ALPHA_MIN)
+      .alphaDecay(SIMULATION_CONFIGURATION.ALPHA_DECAY)
+      .alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET);
 
     this.simulation.on('tick', () => {
       this.render();
     });
 
     // Compute Simulation Based on SUPERGRAPH 💪
-    this.simulation.alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET).restart();
+    this.simulation.restart();
 
     this.nodes = this.g.append('g').attr('class', 'nodes').selectAll('.node');
     this.links = this.g.append('g').attr('class', 'links').selectAll('.link');
