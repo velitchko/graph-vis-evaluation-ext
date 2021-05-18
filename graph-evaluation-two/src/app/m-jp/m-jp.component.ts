@@ -325,7 +325,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
         .attr('id', (d: Cell) => { return d.id; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i] : 0;  })
+        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i-1] : 0;  })
         .attr('fill', (d: Cell) => { return 'darkgray'; })
         .attr('stroke', '#999')
         .attr('stroke-width', '1px')
