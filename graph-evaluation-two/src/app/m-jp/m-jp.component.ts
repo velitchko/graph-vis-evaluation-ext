@@ -250,7 +250,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .attr('x', 0)
       .attr('y', -50)
       .attr('transform', `translate(${(i - 1)*MATRIX_SIZE.WIDTH}, 0)`)
-      .attr('id', `T${i}`);
+      .attr('id', `T${i}`)
+      .attr('font-size', 24)
+      .attr('font-weight', 'bold');
     }
 
     this.highlightedRow = this.g.selectAll('highlighted-row');

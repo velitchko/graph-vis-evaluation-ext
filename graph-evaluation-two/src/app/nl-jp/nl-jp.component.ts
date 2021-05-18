@@ -212,7 +212,9 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .append('text')
         .text(`Time Step: ${i}`)
         .attr('x', 0)
-        .attr('y', 50);
+        .attr('y', 50)
+        .attr('font-size', 24)
+        .attr('font-weight', 'bold');
 
       this.nodes = this.g.select(`#T${i}`).append('g').attr('class', 'nodes').selectAll('.node');
       this.links = this.g.select(`#T${i}`).append('g').attr('class', 'links').selectAll('.link');
