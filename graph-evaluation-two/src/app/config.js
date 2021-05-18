@@ -29,11 +29,13 @@ export const SIMULATION_CONFIGURATION = {
     LINK_DISTANCE: 80, // placeholder
     LINK_STRENGTH: .25, // placeholder
     NODE_STRENGTH: .25, // placeholder
-    MANYBODY_STRENGTH: -100, // placeholder
-    CENTER_STRENGTH: 0.5,
-    ALPHA: 0.3,
-    ALPHA_TARGET: 0.8,
-    VELOCITY_DECAY: 0.5
+    MANYBODY_STRENGTH: -150, // placeholder
+    CENTER_STRENGTH: 0.25,
+    ALPHA: 0.6,
+    ALPHA_MIN: 0.3001,
+    ALPHA_DECAY: 0.05,
+    ALPHA_TARGET: 0.3, //(ALPHA_TARGET - ALPHA)*ALPHA_DECAY
+    VELOCITY_DECAY: 0.125,
 };
 
 export const DISPLAY_CONFIGURATION = {
