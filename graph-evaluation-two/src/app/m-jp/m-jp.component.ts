@@ -250,9 +250,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .attr('x', 0)
       .attr('y', -50)
       .attr('transform', `translate(${(i - 1)*MATRIX_SIZE.WIDTH}, 0)`)
-      .attr('id', `T${i}`)
-      .attr('font-size', 24)
-      .attr('font-weight', 'bold');
+      .attr('id', `T${i}`);
     }
 
     this.highlightedRow = this.g.selectAll('highlighted-row');
@@ -304,7 +302,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .append('text')
       .text(`Time Step: ${i}`)
       .attr('x', 0)
-      .attr('y', -50);
+      .attr('y', -50)
+      .attr('font-size', 24)
+      .attr('font-weight', 'bold');
 
       this.cells = this.g.select(`#T${i}`).append('g').attr('class', 'cells').selectAll('.cell');
 
