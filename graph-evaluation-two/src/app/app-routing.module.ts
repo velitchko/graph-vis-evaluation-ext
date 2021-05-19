@@ -8,6 +8,7 @@ import { NlJpComponent } from './nl-jp/nl-jp.component';
 import { NlSiComponent } from './nl-si/nl-si.component';
 import { NlAnComponent } from './nl-an/nl-an.component';
 import { MAnComponent } from './m-an/m-an.component';
+import { LoadComponent } from './load/load.component';
 
 
 const routes: Routes = [
@@ -18,7 +19,8 @@ const routes: Routes = [
   { path: 'm-si', component: MSiComponent },
   { path: 'm-jp', component: MJpComponent },
   { path: 'm-tl', component: MTlComponent },
-  { path: 'm-an', component: MAnComponent }
+  { path: 'm-an', component: MAnComponent },
+  { path: 'load', component: LoadComponent }
 ];
 
 @NgModule({

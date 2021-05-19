@@ -18,6 +18,7 @@ import { DataService } from './data.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
+import { LoadComponent } from './load/load.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
     MJpComponent,
     MTlComponent,
     NlAnComponent,
-    MAnComponent
+    MAnComponent,
+    LoadComponent
   ],
   imports: [
     BrowserModule,
