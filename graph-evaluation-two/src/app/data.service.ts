@@ -25,7 +25,7 @@ import SFG_43_70_clique from '../assets/SFG_43_70_clique.json';
 import SFG_44_63_clique from '../assets/SFG_44_63_clique.json';
 import SFG_45_70_clique from '../assets/SFG_45_70_clique.json';
 import SFG_45_71_clique from '../assets/SFG_45_71_clique.json';
-
+import SFG_EXAMPLE from '../assets/SFG_EXAMPLE.json';
 @Injectable({
   providedIn: 'root'
 })
@@ -66,6 +66,8 @@ export class DataService {
   private graph_twentytwo = {};
   private graph_twentythree = {};
   private graph_twentyfour = {};
+  // test - example
+  private graph_example = {};
 
 
   constructor() { 
@@ -95,6 +97,9 @@ export class DataService {
     this.graph_twentytwo = SFG_44_63_clique;        // NL/M T3 SI CLIQUE
     this.graph_twentythree = SFG_45_70_clique;      // NL/M T3 AN CLIQUE
     this.graph_twentyfour = SFG_45_71_clique;       // NL/M T3 TL CLIQUE
+
+    // test - example
+    this.graph_example = SFG_EXAMPLE;
   }
 
   getGraph(graph: string): Graph {
@@ -124,7 +129,7 @@ export class DataService {
       case 'graph_twentytwo': return  new Graph(this.graph_twentytwo['nodes'], this.graph_twentytwo['links']);
       case 'graph_twentythree': return  new Graph(this.graph_twentythree['nodes'], this.graph_twentythree['links']);
       case 'graph_twentyfour': return  new Graph(this.graph_twentyfour['nodes'], this.graph_twentyfour['links']);
-      default: return null;
+      default: return  new Graph(this.graph_example['nodes'], this.graph_example['links']);
     }
   }
 }
