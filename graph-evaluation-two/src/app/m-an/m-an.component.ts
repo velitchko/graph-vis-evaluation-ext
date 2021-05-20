@@ -98,7 +98,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   stop(): void {
-    clearTimeout(this.animationHandle);
+    clearInterval(this.animationHandle);
   }
 
   start(): void {
@@ -141,9 +141,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
   }
 
   animate(): void {
-    this.animationHandle = setTimeout(this.animate.bind(this), this.customAnimationSpeed);
-    this.update(this.time);
-    this.time === 4 ? this.time = 1 : this.time++;
+    this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
 
   zoomStart(): void {
@@ -323,19 +321,23 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.render();
   }
 
-  update($event: number): void {
+  update(): void {
+    if (!this.graph) return;
+    
+    this.time === 4 ? this.time = 1 : this.time++;
+
     // CELLS
     this.cells
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicIn)
       .attr('fill-opacity', (d: any) => {
-        return d.link ? d.time[$event - 1] : 0;
+        return d.link ? d.time[this.time - 1] : 0;
       });
 
     this.svgContainer.select('#time')
       .select('text')
-      .text(`Time: T${$event}`);
+      .text(`Time: T${this.time}`);
   }
 
   render(): void {

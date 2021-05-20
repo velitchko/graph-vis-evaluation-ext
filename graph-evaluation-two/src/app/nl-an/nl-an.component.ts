@@ -92,7 +92,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   stop(): void {
-    clearTimeout(this.animationHandle);
+    clearInterval(this.animationHandle);
   }
 
   start(): void {
@@ -135,9 +135,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
   }
 
   animate(): void {
-    this.update(this.time);
-    this.time === 4 ? this.time = 1 : this.time++;
-    this.animationHandle = setTimeout(this.animate.bind(this), ANIMATION_DURATION);
+    this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
 
   zoomStart(): void {
@@ -254,9 +252,10 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     this.links = this.g.append('g').attr('class', 'links').selectAll('.link');
   }
 
-  update($event: number): void {
-    console.log($event);
+  update(): void {
     if (!this.graph) return;
+    
+    this.time === 4 ? this.time = 1 : this.time++;
 
     this.nodes
       .selectAll('circle')
@@ -282,12 +281,12 @@ export class NlAnComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[$event - 1]; });
+      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[this.time - 1]; });
 
 
     this.svgContainer.select('#time')
       .select('text')
-      .text(`Time: T${$event}`);
+      .text(`Time: T${this.time}`);
   }
 
   init(): void {
