@@ -79,7 +79,6 @@ export class NlTlComponent implements OnInit, AfterViewInit {
     if (this.graph) {
       this.setup();
       this.init();
-      this.zoomFit();
     }
 
   }

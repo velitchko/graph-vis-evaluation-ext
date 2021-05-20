@@ -83,7 +83,6 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     if (this.graph) {
       this.setup();
       this.init();
-      this.zoomFit();
     }
   }
 
@@ -215,6 +214,9 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     const width = bounds.width;
     const height = bounds.height;
 
+    console.log(fullWidth, width);
+    console.log(fullHeight, height);
+
     const midX = bounds.x + width / 2;
     const midY = bounds.y + height / 2;
 
@@ -223,6 +225,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
+    console.log(scale, translate);
     this.g.attr('transform', `scale(${scale}) translate(${translate[0] - 100}, 50)`);
   }
 
