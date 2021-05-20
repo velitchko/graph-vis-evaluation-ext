@@ -221,7 +221,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
-    this.g.attr('transform', `scale(${scale}) translate(${translate[0] - 100}, 50)`);
+    this.g.attr('transform', `scale(${scale}) translate(50, 80)`);
 }
 
   setup(): void {
