@@ -155,13 +155,16 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     
     const width = bounds.width;
     const height = bounds.height;
+
+    const midX = bounds.x + width / 2;
+    const midY = bounds.y + height / 2;
   
     if (width == 0 || height == 0) return; // nothing to fit
 
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
-    
-    this.g
-    .attr('transform', `scale(${scale})`);
+    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+    this.g.attr('transform', `scale(${scale}) translate(${translate[0] - 200}, 50)`);
 }
 
   setup(): void {
