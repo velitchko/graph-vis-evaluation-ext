@@ -79,6 +79,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
     if (this.graph) {
       this.setup();
       this.init();
+      this.zoomFit();
     }
 
   }
@@ -149,6 +150,27 @@ export class NlTlComponent implements OnInit, AfterViewInit {
 
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
+
+  
+  zoomFit() {
+    const bounds = (this.svgContainer.node() as any).getBBox();
+    
+    const fullWidth = this.width;
+    const fullHeight = this.height;
+    
+    const width = bounds.width;
+    const height = bounds.height;
+
+    const midX = bounds.x + width / 2;
+    const midY = bounds.y + height / 2;
+  
+    if (width == 0 || height == 0) return; // nothing to fit
+
+    const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
+    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+    this.g.attr('transform', `scale(${scale}) translate(${translate[0] - 100}, 50)`);
+}
 
   setup(): void {
     this.zoom = d3.zoom()

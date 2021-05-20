@@ -83,6 +83,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     if (this.graph) {
       this.setup();
       this.init();
+      this.zoomFit();
     }
   }
 
@@ -172,7 +173,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     this.simulation
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
       .restart();
-    
+
     this.dragStartTime = Date.now();
 
     $event.subject.fx = $event.subject.x;
@@ -203,6 +204,26 @@ export class NlAnComponent implements OnInit, AfterViewInit {
     $event.subject.fy = null;
 
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+  }
+
+  zoomFit() {
+    const bounds = (this.svgContainer.node() as any).getBBox();
+
+    const fullWidth = this.width;
+    const fullHeight = this.height;
+
+    const width = bounds.width;
+    const height = bounds.height;
+
+    const midX = bounds.x + width / 2;
+    const midY = bounds.y + height / 2;
+
+    if (width == 0 || height == 0) return; // nothing to fit
+
+    const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
+    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+    this.g.attr('transform', `scale(${scale}) translate(${translate[0] - 100}, 50)`);
   }
 
   setup(): void {
@@ -254,7 +275,7 @@ export class NlAnComponent implements OnInit, AfterViewInit {
 
   update(): void {
     if (!this.graph) return;
-    
+
     this.time === 4 ? this.time = 1 : this.time++;
 
     this.nodes
