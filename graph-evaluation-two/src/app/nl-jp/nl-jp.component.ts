@@ -78,7 +78,6 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   zoomStart(): void {
-    console.log(this.interactionSwitch);
     if (!this.interactionSwitch) return; // no interaction for you
     this.zoomStartTime = Date.now();
   }
