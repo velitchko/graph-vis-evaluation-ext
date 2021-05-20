@@ -114,7 +114,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
     this.highlightStartTime = Date.now();
 
-    if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+    // if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
     d3.selectAll(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
@@ -172,8 +172,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('fill-opacity', 0);
     }
 
-    if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
-      const highlightTime = this.highlightEndTime - this.highlightStartTime;
+    // if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
+    const highlightTime = this.highlightEndTime - this.highlightStartTime;
+    if(highlightTime >= 200) {// log if it took more than 200ms
       this.timers.push({
         type: 'highlight',
         time: highlightTime
@@ -182,6 +183,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       this.interactions.highlights++;
       parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
     }
+    // }
   }
 
   zoomFit() {
@@ -272,6 +274,11 @@ export class MJpComponent implements OnInit, AfterViewInit {
         edgeHash.set(idA, link);
         edgeHash.set(idB, link);
       });
+
+     // sort nodes alphabetically
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return a.label.localeCompare(b.label);
+    });
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {

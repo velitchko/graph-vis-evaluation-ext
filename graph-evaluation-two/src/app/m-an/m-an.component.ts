@@ -152,8 +152,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
 
   zooming($event: any): void {
     if (!this.interactionSwitch) return;
-    console.log('zooming');
-    console.log($event.transform);
+
     this.g.attr('transform', $event.transform);
   }
 
@@ -180,7 +179,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
 
     this.highlightStartTime = Date.now();
 
-    if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+    // if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
     d3.select(($event.currentTarget as any))
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
@@ -230,16 +229,19 @@ export class MAnComponent implements OnInit, AfterViewInit {
     this.highlightedRow
       .attr('fill-opacity', 0);
 
-    if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
+    // if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
       const highlightTime = this.highlightEndTime - this.highlightStartTime;
-      this.timers.push({
-        type: 'highlight',
-        time: highlightTime
-      });
-
-      this.interactions.highlights++;
-      parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
-    }
+      if(highlightTime >= 200) { // only highlight events that took longer than 250ms to complete
+        this.timers.push({
+          type: 'highlight',
+          time: highlightTime
+        });
+  
+        
+        this.interactions.highlights++;
+        parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+      }
+    // }
   }
 
   setup(): void {
@@ -301,6 +303,11 @@ export class MAnComponent implements OnInit, AfterViewInit {
         edgeHash.set(idA, link);
         edgeHash.set(idB, link);
       });
+    
+    // sort nodes alphabetically
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return a.label.localeCompare(b.label);
+    });
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
@@ -318,6 +325,7 @@ export class MAnComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
+
     this.render();
   }
 

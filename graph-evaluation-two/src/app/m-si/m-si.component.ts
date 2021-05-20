@@ -121,7 +121,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
 
     this.highlightStartTime = Date.now();
 
-    if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+    // if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
     // this.background.select(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
     //   .attr('fill', 'red');
@@ -133,15 +133,15 @@ export class MSiComponent implements OnInit, AfterViewInit {
       .attr('stroke', 'red')
       .attr('stroke-opacity', 1);
 
-    // row highlight
-    d3.selectAll('.rows')
-      .select(`#${source}`)
-      .attr('fill', 'red');
+    // // row highlight
+    // d3.selectAll('.rows')
+    //   .select(`#${source}`)
+    //   .attr('fill', 'red');
 
-    // column highlight
-    d3.selectAll('.columns')
-      .select(`#${target}`)
-      .attr('fill', 'red');
+    // // column highlight
+    // d3.selectAll('.columns')
+    //   .select(`#${target}`)
+    //   .attr('fill', 'red');
 
     const time = +($event.currentTarget as SVGElement).getAttribute('time');
     // console.log($event.currentTarget, time);
@@ -188,8 +188,9 @@ export class MSiComponent implements OnInit, AfterViewInit {
     this.highlightedRow
       .attr('fill-opacity', 0);
 
-    if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
-      const highlightTime = this.highlightEndTime - this.highlightStartTime;
+    // if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
+    const highlightTime = this.highlightEndTime - this.highlightStartTime;
+    if(highlightTime >= 200) { // log if it took more than 200ms
       this.timers.push({
         type: 'highlight',
         time: highlightTime
@@ -198,6 +199,7 @@ export class MSiComponent implements OnInit, AfterViewInit {
       this.interactions.highlights++;
       parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
     }
+    // }
   }
 
 
@@ -269,6 +271,11 @@ export class MSiComponent implements OnInit, AfterViewInit {
         edgeHash.set(idB, link);
       });
 
+     // sort nodes alphabetically
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return a.label.localeCompare(b.label);
+    });
+
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
         let cell = {
@@ -285,6 +292,8 @@ export class MSiComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
+    
+
     this.render();
 
   }
