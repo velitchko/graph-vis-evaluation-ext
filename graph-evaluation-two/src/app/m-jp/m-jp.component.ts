@@ -199,10 +199,10 @@ export class MJpComponent implements OnInit, AfterViewInit {
     if (width == 0 || height == 0) return; // nothing to fit
 
     const scale = 0.95 / Math.max(width / fullWidth, height / fullHeight);
-    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+    // const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
     
     this.g
-    .attr('transform', `scale(${scale}) translate(0, 100)`);
+    .attr('transform', `scale(${scale}) translate(${ SVG_MARGIN.left }, 100)`);
 }
 
 
