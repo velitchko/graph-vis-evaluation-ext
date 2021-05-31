@@ -320,7 +320,7 @@ export class NlSiComponent implements OnInit, AfterViewInit {
       .enter()
       .append('g')
       .attr('class', 'node')
-      .style('cursor', 'pointer')
+      .style('cursor', () => { return this.interactionSwitch ? 'pointer' : ''; })
       .call(this.drag);
 
     this.nodes
