@@ -14,7 +14,6 @@ import { ActivatedRoute } from '@angular/router';
 export class MJpComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
   private graph: Graph;
-  private interactionSwitch: boolean;
 
   private matrix: Array<Cell>;
 
@@ -50,7 +49,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
       zooms: 0,
       highlights: 0
     };
-    this.interactionSwitch = false;
   }
 
   ngOnInit(): void {
@@ -58,7 +56,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
-        this.interactionSwitch = params['interactions'] === 'true' ? true : false;
       });
   }
 
@@ -80,20 +77,14 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
 
   zoomStart(): void {
-    if(!this.interactionSwitch) return;
-
     this.zoomStartTime = Date.now();
   }
 
   zooming($event: any): void {
-    if(!this.interactionSwitch) return;
-
     this.g.attr('transform', $event.transform);
   }
 
   zoomEnd(): void {
-    if(!this.interactionSwitch) return;
-    
     this.zoomEndTime = Date.now();
 
     const zoomTime = this.zoomEndTime - this.zoomStartTime;
@@ -108,8 +99,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: Event): void {
-    if (!this.interactionSwitch) return; // no interaction for you
-
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
@@ -150,8 +139,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   mouseOut($event: Event): void {
-    if (!this.interactionSwitch) return; // no interaction for you
-
     $event.preventDefault();
 
     this.highlightEndTime = Date.now();
