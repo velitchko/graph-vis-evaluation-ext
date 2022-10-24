@@ -4,10 +4,8 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { NlSiComponent } from './nl-si/nl-si.component';
 import { NlJpComponent } from './nl-jp/nl-jp.component';
 import { NlTlComponent } from './nl-tl/nl-tl.component';
-import { MSiComponent } from './m-si/m-si.component';
 import { MJpComponent } from './m-jp/m-jp.component';
 import { MTlComponent } from './m-tl/m-tl.component';
 import { NlAnComponent } from './nl-an/nl-an.component';
@@ -23,10 +21,8 @@ import { LoadComponent } from './load/load.component';
 @NgModule({
   declarations: [
     AppComponent,
-    NlSiComponent,
     NlJpComponent,
     NlTlComponent,
-    MSiComponent,
     MJpComponent,
     MTlComponent,
     NlAnComponent,
