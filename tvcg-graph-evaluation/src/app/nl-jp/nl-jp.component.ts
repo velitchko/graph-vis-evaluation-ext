@@ -39,12 +39,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   private width: number;
   private height: number;
 
-  value: number = 1;
-
-  options: Options = {
-    floor: 1,
-    ceil: 4
-  };
+  private numTimeSlices = 0;
+  private cnt = 0;
 
   constructor(private ds: DataService, private route: ActivatedRoute, private http: HttpClient) {
     this.timers = new Array<{ type: string, time: number }>();
@@ -59,6 +55,9 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+
+        this.numTimeSlices = this.graph.nodes[0].time.length;
+        this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
       });
   }
 
@@ -174,7 +173,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g')
     // .attr('transform', `translate(${-NODE_LINK_SIZE.WIDTH}, 0)`);
 
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+    for(let i = 1; i <= this.cnt; i++) {
       this.g.append('g')
       .attr('transform', `translate(${(i - 1)*NODE_LINK_SIZE.WIDTH}, 0)`)
       .attr('id', `T${i}`)
@@ -202,7 +201,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   init(): void {
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+    for(let i = 1; i <= this.cnt; i++) {
       this.g.select(`#T${i}`)
         .append('text')
         .text(`Time Step: ${i}`)
@@ -271,7 +270,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   render(): void {
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+    for(let i = 1; i <= this.cnt; i++) {
       this.nodes = this.g.select(`#T${i}`).selectAll('.node');
       this.links = this.g.select(`#T${i}`).selectAll('.link');
 

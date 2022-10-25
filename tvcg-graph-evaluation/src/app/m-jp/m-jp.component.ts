@@ -5,8 +5,8 @@ import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, 
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
-
-@Component({
+import * as reorder from 'reorder.js';
+  @Component({
   selector: 'app-m-jp',
   templateUrl: './m-jp.component.html',
   styleUrls: ['./m-jp.component.scss']
@@ -36,6 +36,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
   private width: number;
   private height: number;
 
+  private numTimeSlices = 0;
+  private cnt = 0;
+
   value: number = 1;
   options: Options = {
     floor: 1,
@@ -56,6 +59,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+
+        this.numTimeSlices = this.graph.nodes[0].time.length;
+        this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
       });
   }
 
@@ -121,7 +127,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .select(`#${target}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
 
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+    // timeslice count
+    
+    for(let i = 1; i <= this.cnt; i++) {
       d3
         .select(`#highlighted-column-T${i}`)
         .attr('fill-opacity', 0.25)
@@ -149,7 +157,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     d3.selectAll('text')
       .attr('fill', 'black');
 
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+    for(let i = 1; i <= this.cnt; i++) {
       d3
         .select(`#highlighted-column-T${i}`)
         .attr('fill-opacity', 0);
@@ -196,6 +204,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
 
   setup(): void {
+    console.log('setting up');
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
       .on('start', this.zoomStart.bind(this))
@@ -212,7 +221,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
+    for(let i = 1; i <= this.cnt; i++) {
       this.g.append('rect')
         .attr('class', 'highlighted-row')
         .attr('id', `highlighted-row-T${i}`)
@@ -248,6 +257,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   init(): void {
+    console.log('initializing');
     let edgeHash = new Map<string, any>();
     this.graph.links
       .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
@@ -280,18 +290,20 @@ export class MJpComponent implements OnInit, AfterViewInit {
           cell.link = 1;
           cell.time = edgeHash.get(cell.id).time;
         }
-        this.matrix.push(cell);
-      });
+          this.matrix.push(cell);
+        });
     });
+    console.log(this.matrix);
+    console.log('initialized');
     this.render();
   }
 
   render(): void {
+    console.log('rendering');
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
 
-    for(let i = 1; i <= NUMBER_OF_TIME_SLICES; i++) {
-
+    for(let i = 1; i <= this.cnt; i++) {
       this.g.select(`#T${i}`)
       .append('text')
       .text(`Time Step: ${i}`)
@@ -368,5 +380,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
     }
 
     this.zoomFit();
+    console.log('rendered');
   }
 }
