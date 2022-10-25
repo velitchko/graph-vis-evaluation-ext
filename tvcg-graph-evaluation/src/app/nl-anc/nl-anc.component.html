@@ -1,7 +1,22 @@
 <div id="container" #container>
-    <div [style.width]="sliderWidth">
-        <ngx-slider class="timeline-slider" [(value)]="value" [options]="options" (valueChange)="update($event)"></ngx-slider>
+    <div class="controls">
+        <div [style.width]="sliderWidth">
+            <ngx-slider class="timeline-slider" [(value)]="value" [options]="options" (valueChange)="update($event)"></ngx-slider>
+        </div>
+        <p>current speed: {{ customAnimationSpeed/1000 }}s</p>
+        <button type="button" class="btn btn-light" (click)="slower()">
+            <i-bs name="skip-backward-fill" width="25" height="25"></i-bs>
+        </button>
+        <button type="button" class="btn btn-light" (click)="start()" [disabled]="animationStarted">
+            <i-bs name="play-fill" width="25" height="25"></i-bs>
+        </button>
+        <button type="button" class="btn btn-light" (click)="pause()" [disabled]="!animationStarted">
+            <i-bs name="pause-fill" width="25" height="25"></i-bs>
+        </button>
+        <button type="button" class="btn btn-light" (click)="faster()"> 
+            <i-bs name="skip-forward-fill" width="25" height="25"></i-bs>
+        </button>
     </div>
     <!-- <h3>nl-tl</h3> -->
-    <div id="svg-container-nltl"></div>
+    <div id="svg-container-nlanc"></div>
 </div>

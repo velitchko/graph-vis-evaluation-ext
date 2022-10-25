@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, TRANSITION_DURATION } from '../config';
+import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, TRANSITION_DURATION, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
@@ -35,12 +35,17 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   private dragEndTime: number;
 
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
-  private interactions: { zooms: number, drags: number, slider: number }; // number of zooms, drags
+  private interactions: { zooms: number, drags: number, slider: number, faster: number, slower: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
 
   sliderWidth: string;
+
+  private animationHandle: any; // animation timer handler
+  customAnimationSpeed: number;
+
+  animationStarted: boolean;
 
   value: number = 1;
   options: Options = {
@@ -57,9 +62,15 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     this.interactions = {
       zooms: 0,
       drags: 0,
-      slider: 0
+      slider: 0,
+      faster: 0,
+      slower: 0
     };
     this.sliderWidth = `${NODE_LINK_SIZE.WIDTH}px`;
+
+    this.customAnimationSpeed = ANIMATION_DURATION;
+
+    this.animationStarted = false;
   }
 
   ngOnInit(): void {
@@ -86,7 +97,59 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       this.setup();
       this.init();
     }
+  }
+  
+  restart(): void {
+    this.pause();
+    this.start();
+  }
 
+  pause(): void {
+    this.animationStarted = false;
+    clearInterval(this.animationHandle);
+  }
+
+  start(): void {
+    this.animationStarted = true;
+    this.animate();
+  }
+
+  slower(): void {
+    if (this.customAnimationSpeed + ANIMATION_INCREMENT <= ANIMATION_UPPER_BOUND) {
+      this.customAnimationSpeed += ANIMATION_INCREMENT;
+    }
+
+    this.timers.push({
+      type: 'slower',
+      time: 0
+    });
+
+    this.interactions.slower++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
+    this.restart();
+  }
+
+  faster(): void {
+    if (this.customAnimationSpeed - ANIMATION_INCREMENT >= ANIMATION_LOWER_BOUND) {
+      this.customAnimationSpeed -= ANIMATION_INCREMENT;
+    }
+
+    this.timers.push({
+      type: 'slower',
+      time: 0
+    });
+
+    this.interactions.slower++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
+    this.restart();
+  }
+
+  animate(): void {
+    this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
 
   zoomStart(): void {
@@ -183,7 +246,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .on('drag', this.dragging.bind(this))
       .on('end', this.dragEnd.bind(this));
 
-    this.svgContainer = (d3.select('#svg-container-nltl') as any)
+    this.svgContainer = (d3.select('#svg-container-nlanc') as any)
       .append('svg')
       .attr('viewBox', [0, 0, this.width, this.height])
       .attr('width', this.width)
@@ -222,6 +285,16 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       time: 0
     });
 
+    let timestep = undefined;
+    
+    if(!$event) {
+      this.value = (this.value === this.options.ceil) ? 1 : this.value+1;
+      timestep = this.value 
+    } else {
+      timestep = $event;
+    }
+
+    // TODO: this depends on if play or using slider
     this.interactions.slider++;
 
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
@@ -230,7 +303,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .selectAll('circle')
       .transition()
       .attr('fill-opacity', (d: Node) => {
-        return d.time[$event-1];
+        return d.time[timestep-1];
       })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
@@ -243,7 +316,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .selectAll('text')
       .transition()
       .attr('opacity', (d: Node) => {
-        return d.time[$event-1];
+        return d.time[timestep-1];
       })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
@@ -259,7 +332,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
       .attr('stroke-opacity', (d: Link<Node>) => {
-        return d.time[$event-1];
+        return d.time[timestep-1];
       });
   }
 
