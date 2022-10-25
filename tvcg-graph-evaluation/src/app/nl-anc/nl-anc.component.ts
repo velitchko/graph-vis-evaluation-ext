@@ -6,13 +6,14 @@ import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, TRANSI
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
+import * as _ from 'lodash';
 @Component({
-  selector: 'app-nl-tl',
-  templateUrl: './nl-tl.component.html',
-  styleUrls: ['./nl-tl.component.scss']
+  selector: 'app-nl-anc',
+  templateUrl: './nl-anc.component.html',
+  styleUrls: ['./nl-anc.component.scss']
 })
 
-export class NlTlComponent implements OnInit, AfterViewInit {
+export class NlAncComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
 
   private graph: Graph;
@@ -45,7 +46,7 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   options: Options = {
     floor: 1,
     ceil: 4,
-    ticksArray: [1, 2, 3, 4],
+    ticksArray: [],
     translate: (value: number): string => {
       return `Time: ${value}`;
     }
@@ -66,6 +67,14 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+
+        // update slider time steps
+        const newOptions: Options = Object.assign({}, this.options);
+        
+        newOptions.ticksArray = _.range(1, this.graph.nodes[0].time.length + 1);
+        newOptions.ceil = this.graph.nodes[0].time.length;
+
+        this.options = newOptions;
       });
   }
 
@@ -103,6 +112,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if($event.subject.time != this.value) return; // if node outside of time slice dont drag
+
     this.simulation
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
       .restart();
@@ -114,11 +125,15 @@ export class NlTlComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if($event.subject.time != this.value) return; // if node outside of time slice dont drag
+
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
+    if($event.subject.time != this.value) return; // if node outside of time slice dont drag
+
     this.dragEndTime = Date.now();
 
     const dragTime = this.dragEndTime - this.dragStartTime;
@@ -214,6 +229,9 @@ export class NlTlComponent implements OnInit, AfterViewInit {
     this.nodes
       .selectAll('circle')
       .transition()
+      .attr('fill-opacity', (d: Node) => {
+        return d.time[$event-1];
+      })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
       // .attr('opacity', (d: any) => {
@@ -224,6 +242,9 @@ export class NlTlComponent implements OnInit, AfterViewInit {
     this.nodes
       .selectAll('text')
       .transition()
+      .attr('opacity', (d: Node) => {
+        return d.time[$event-1];
+      })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
       // .attr('opacity', (d: any) => {
@@ -261,7 +282,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; })
-      .attr('fill', 'darkgray');
+      .attr('fill', 'darkgray')
+      .attr('fill-opacity', (d: Node) => { return d.time[0]; });
 
     this.nodes.append('text')
       .text((d: Node) => { return d.label; })
@@ -269,7 +291,8 @@ export class NlTlComponent implements OnInit, AfterViewInit {
       .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
       .attr('stroke', 'white')
       .attr('stroke-width', 2)
-      .attr('paint-order', 'stroke');;
+      .attr('paint-order', 'stroke')
+      .attr('opacity', (d: Node) => { return d.time[0]; });
 
     // JOIN
     this.nodes = this.nodes

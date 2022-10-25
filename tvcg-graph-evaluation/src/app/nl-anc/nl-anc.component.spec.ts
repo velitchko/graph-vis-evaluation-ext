@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NlTlComponent } from './nl-tl.component';
+import { NlAncComponent } from './nl-anc.component';
 
 describe('NlAnComponent', () => {
-  let component: NlTlComponent;
-  let fixture: ComponentFixture<NlTlComponent>;
+  let component: NlAncComponent;
+  let fixture: ComponentFixture<NlAncComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NlTlComponent ]
+      declarations: [ NlAncComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(NlTlComponent);
+    fixture = TestBed.createComponent(NlAncComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

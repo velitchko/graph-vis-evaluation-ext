@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MTlComponent } from './m-tl.component';
+import { MAncComponent } from './m-anc.component';
 
-describe('MTlComponent', () => {
-  let component: MTlComponent;
-  let fixture: ComponentFixture<MTlComponent>;
+describe('MAncComponent', () => {
+  let component: MAncComponent;
+  let fixture: ComponentFixture<MAncComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MTlComponent ]
+      declarations: [ MAncComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MTlComponent);
+    fixture = TestBed.createComponent(MAncComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

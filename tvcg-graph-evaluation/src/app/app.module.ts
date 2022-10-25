@@ -5,9 +5,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NlJpComponent } from './nl-jp/nl-jp.component';
-import { NlTlComponent } from './nl-tl/nl-tl.component';
+import { NlAncComponent } from './nl-anc/nl-anc.component';
 import { MJpComponent } from './m-jp/m-jp.component';
-import { MTlComponent } from './m-tl/m-tl.component';
+import { MAncComponent } from './m-anc/m-anc.component';
 import { NlAnComponent } from './nl-an/nl-an.component';
 import { MAnComponent } from './m-an/m-an.component';
 
@@ -22,9 +22,9 @@ import { LoadComponent } from './load/load.component';
   declarations: [
     AppComponent,
     NlJpComponent,
-    NlTlComponent,
+    NlAncComponent,
     MJpComponent,
-    MTlComponent,
+    MAncComponent,
     NlAnComponent,
     MAnComponent,
     LoadComponent

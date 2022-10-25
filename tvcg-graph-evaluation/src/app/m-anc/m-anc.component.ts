@@ -5,14 +5,13 @@ import { DISPLAY_CONFIGURATION, MATRIX_SIZE, TRANSITION_DURATION, SVG_MARGIN, FO
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
-import { $ } from 'protractor';
 
 @Component({
-  selector: 'app-m-tl',
-  templateUrl: './m-tl.component.html',
-  styleUrls: ['./m-tl.component.scss']
+  selector: 'app-m-anc',
+  templateUrl: './m-anc.component.html',
+  styleUrls: ['./m-anc.component.scss']
 })
-export class MTlComponent implements OnInit, AfterViewInit {
+export class MAncComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
   private graph: Graph;
 
