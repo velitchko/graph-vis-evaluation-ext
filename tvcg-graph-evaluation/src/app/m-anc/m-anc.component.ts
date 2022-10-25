@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { DISPLAY_CONFIGURATION, MATRIX_SIZE, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
+import { DISPLAY_CONFIGURATION, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND, MATRIX_SIZE, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-m-anc',
@@ -31,12 +32,18 @@ export class MAncComponent implements OnInit, AfterViewInit {
   private highlightEndTime: number;
   
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
-  private interactions: { zooms: number, highlights: number, slider: number }; // number of zooms, drags
+  private interactions: { zooms: number, highlights: number, slider: number, faster: number, slower: number }; // number of zooms, drags
 
   private width: number;
   private height: number;
 
   sliderWidth: string;
+
+  
+  private animationHandle: any; // animation timer handler
+  customAnimationSpeed: number;
+
+  animationStarted: boolean;
 
   value: number = 1;
   options: Options = {
@@ -54,10 +61,16 @@ export class MAncComponent implements OnInit, AfterViewInit {
     this.interactions = {
       zooms: 0,
       highlights: 0,
-      slider: 0
+      slider: 0,
+      faster: 0,
+      slower: 0
     };
 
     this.sliderWidth = `${MATRIX_SIZE.WIDTH}px`;
+
+    this.customAnimationSpeed = ANIMATION_DURATION;
+
+    this.animationStarted = false;
   }
 
   ngOnInit(): void {
@@ -65,6 +78,14 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+
+        // update slider time steps
+        const newOptions: Options = Object.assign({}, this.options);
+        
+        newOptions.ticksArray = _.range(1, this.graph.nodes[0].time.length + 1);
+        newOptions.ceil = this.graph.nodes[0].time.length;
+
+        this.options = newOptions;
       });
   }
 
@@ -82,6 +103,60 @@ export class MAncComponent implements OnInit, AfterViewInit {
       this.setup();
       this.init();
     }
+  }
+
+  
+  restart(): void {
+    this.pause();
+    this.start();
+  }
+
+  pause(): void {
+    this.animationStarted = false;
+    clearInterval(this.animationHandle);
+  }
+
+  start(): void {
+    this.animationStarted = true;
+    this.animate();
+  }
+
+  faster(): void {
+    if (this.customAnimationSpeed - ANIMATION_INCREMENT >= ANIMATION_LOWER_BOUND) {
+      this.customAnimationSpeed -= ANIMATION_INCREMENT;
+    }
+
+    this.timers.push({
+      type: 'faster',
+      time: 0
+    });
+
+    this.interactions.faster++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
+    this.restart();
+  }
+
+  slower(): void {
+    if (this.customAnimationSpeed + ANIMATION_INCREMENT <= ANIMATION_UPPER_BOUND) {
+      this.customAnimationSpeed += ANIMATION_INCREMENT;
+    }
+
+    this.timers.push({
+      type: 'slower',
+      time: 0
+    });
+
+    this.interactions.slower++;
+
+    parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
+
+    this.restart();
+  }
+
+  animate(): void {
+    this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
   
   zoomStart(): void {
@@ -201,7 +276,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     .on('zoom', this.zooming.bind(this))
     .on('end', this.zoomEnd.bind(this));
 
-    this.svgContainer = (d3.select('#svg-container-mtl') as any)
+    this.svgContainer = (d3.select('#svg-container-manc') as any)
       .append('svg')
       .attr('viewBox', [0, 0, this.width, this.height])
       .attr('width', this.width)
@@ -278,11 +353,22 @@ export class MAncComponent implements OnInit, AfterViewInit {
   update($event: number): void {
     if (!this.graph) return;
 
+    let timestep = undefined;
+    
+    if(!$event) {
+      this.value = (this.value === this.options.ceil) ? 1 : this.value+1;
+      timestep = this.value 
+    } else {
+      timestep = $event;
+    }
+    console.log(timestep)
+
     this.timers.push({
       type: 'slider',
       time: 0
     });
 
+    // TODO: this depends on if play or using slider
     this.interactions.slider++;
     
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
@@ -293,7 +379,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
       .attr('fill-opacity', (d: Cell) => {
-        return d.link ? d.time[$event - 1] : 0;
+        return d.link ? d.time[timestep - 1] : 0;
       });
   }
 

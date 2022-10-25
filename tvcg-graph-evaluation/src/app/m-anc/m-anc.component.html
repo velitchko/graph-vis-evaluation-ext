@@ -2,6 +2,21 @@
     <div [style.width]="sliderWidth">
         <ngx-slider [(value)]="value" [options]="options" (valueChange)="update($event)"></ngx-slider>
     </div>
+    <p>current speed: {{ customAnimationSpeed/1000 }}s</p>
+    <div class="controls">
+        <button type="button" class="btn btn-light" (click)="slower()">
+            <i-bs name="skip-backward-fill" width="25" height="25"></i-bs>
+        </button>
+        <button type="button" class="btn btn-light" (click)="start()" [disabled]="animationStarted">
+            <i-bs name="play-fill" width="25" height="25"></i-bs>
+        </button>
+        <button type="button" class="btn btn-light" (click)="pause()" [disabled]="!animationStarted">
+            <i-bs name="pause-fill" width="25" height="25"></i-bs>
+        </button>
+        <button type="button" class="btn btn-light" (click)="faster()"> 
+            <i-bs name="skip-forward-fill" width="25" height="25"></i-bs>
+        </button>
+    </div>
     <!-- <h3>m-tl</h3> -->
-    <div id="svg-container-mtl"></div>
+    <div id="svg-container-manc"></div>
 </div>
