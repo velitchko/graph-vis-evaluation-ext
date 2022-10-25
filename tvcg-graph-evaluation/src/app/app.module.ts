@@ -8,8 +8,6 @@ import { NlJpComponent } from './nl-jp/nl-jp.component';
 import { NlAncComponent } from './nl-anc/nl-anc.component';
 import { MJpComponent } from './m-jp/m-jp.component';
 import { MAncComponent } from './m-anc/m-anc.component';
-import { NlAnComponent } from './nl-an/nl-an.component';
-import { MAnComponent } from './m-an/m-an.component';
 
 import { DataService } from './data.service';
 
@@ -25,8 +23,6 @@ import { LoadComponent } from './load/load.component';
     NlAncComponent,
     MJpComponent,
     MAncComponent,
-    NlAnComponent,
-    MAnComponent,
     LoadComponent
   ],
   imports: [
