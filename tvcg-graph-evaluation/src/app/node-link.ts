@@ -10,6 +10,11 @@ export class Node implements d3.SimulationNodeDatum {
     fy?: number;
     label: string;
     id: number;
+    time?: Array<number>;
+
+    constructor() {
+        this.time = new Array<number>();
+    }
 };
 
 export class Link<Node> implements d3.SimulationLinkDatum<d3.SimulationNodeDatum> {
