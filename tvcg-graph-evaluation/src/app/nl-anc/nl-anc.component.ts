@@ -175,7 +175,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if($event.subject.time != this.value) return; // if node outside of time slice dont drag
+    if(!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     this.simulation
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
@@ -188,14 +188,14 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if($event.subject.time != this.value) return; // if node outside of time slice dont drag
+    if(!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if($event.subject.time != this.value) return; // if node outside of time slice dont drag
+    if(!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     this.dragEndTime = Date.now();
 
