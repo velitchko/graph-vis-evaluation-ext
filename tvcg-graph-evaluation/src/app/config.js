@@ -1,6 +1,6 @@
 export const WIDTH = 960;
 export const HEIGHT = 960;
-export const NUMBER_OF_TIME_SLICES = 4;
+export const NUMBER_OF_TIME_SLICES = 8;
 
 export const NODE_SIZE = 8;
 export const LINK_LENGTH = 80;
@@ -14,6 +14,9 @@ export const ANIMATION_LOWER_BOUND = 1000;
 
 export const CELL_SIZE = 16;
 export const FONT_SIZE = 18;
+
+export const JP_COL_COUNT = 4;
+export const JP_ROW_COUNT = 2;
 
 export const MATRIX_SIZE = {
     WIDTH: 800, // placeholder

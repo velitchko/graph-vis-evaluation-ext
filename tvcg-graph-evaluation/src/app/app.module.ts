@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import {MatGridListModule} from '@angular/material/grid-list';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -15,6 +16,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { LoadComponent } from './load/load.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,9 @@ import { LoadComponent } from './load/load.component';
     HttpClientModule,
     NgbModule,
     NgxSliderModule,
-    NgxBootstrapIconsModule.pick(allIcons)
+    MatGridListModule,
+    NgxBootstrapIconsModule.pick(allIcons),
+    BrowserAnimationsModule
   ],
   providers: [DataService],
   bootstrap: [AppComponent]

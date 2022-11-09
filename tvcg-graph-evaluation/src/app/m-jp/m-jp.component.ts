@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE } from '../config';
+import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE, JP_ROW_COUNT, JP_COL_COUNT } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
 import * as reorder from 'reorder.js';
+import { group } from 'console';
   @Component({
   selector: 'app-m-jp',
   templateUrl: './m-jp.component.html',
@@ -39,6 +40,11 @@ export class MJpComponent implements OnInit, AfterViewInit {
   private numTimeSlices = 0;
   private cnt = 0;
 
+  
+  public cols = JP_COL_COUNT;
+  public rows = JP_ROW_COUNT;
+  public timeSlices = NUMBER_OF_TIME_SLICES;
+  
   value: number = 1;
   options: Options = {
     floor: 1,
@@ -61,7 +67,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
         this.graph = this.ds.getGraph(graph);
 
         this.numTimeSlices = this.graph.nodes[0].time.length;
-        this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
+        //this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
+        this.cnt = 8;
       });
   }
 
@@ -87,7 +94,10 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   zooming($event: any): void {
-    this.g.attr('transform', $event.transform);
+    this.g.selectAll('.group-container').each((d, i, nodes) => {
+      d3.select(nodes[i]).attr('transform', $event.transform).attr('transform-origin', '0 0');
+    });
+
   }
 
   zoomEnd(): void {
@@ -247,7 +257,13 @@ export class MJpComponent implements OnInit, AfterViewInit {
       this.g.append('g')
       .attr('x', 0)
       .attr('y', -50)
-      .attr('transform', `translate(${(i - 1)*MATRIX_SIZE.WIDTH}, 0)`)
+      .attr('transform', () => {
+        if(i <= this.cols) {
+          return `translate(${(i - 1)*MATRIX_SIZE.WIDTH}, 0)`;
+        } else {
+          return `translate(${((i - 1) % this.cols)*MATRIX_SIZE.WIDTH}, ${MATRIX_SIZE.HEIGHT})`;
+        }
+      })
       .attr('id', `T${i}`);
     }
 
@@ -312,7 +328,12 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .attr('font-size', 24)
       .attr('font-weight', 'bold');
 
-      this.cells = this.g.select(`#T${i}`).append('g').attr('class', 'cells').selectAll('.cell');
+      const groupContainer = this.g.select(`#T${i}`)
+      .append('g')
+      .attr('class', 'group-container')
+      .attr('id', `group-container-${i}`)
+
+      this.cells = groupContainer.append('g').attr('class', 'cells').selectAll('.cell');
 
       // UPDATE
       this.cells = this.cells.data(this.matrix);
@@ -344,8 +365,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       this.cells.selectAll('.cell').remove();
 
       // ROWS
-      this.g
-        .select(`#T${i}`)
+      groupContainer
         .append('g')
         .attr('class', 'rows')
         .selectAll('text')
@@ -361,8 +381,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('font-size', FONT_SIZE);
 
       // COLUMNS
-      this.g
-        .select(`#T${i}`)
+      groupContainer
         .append('g')
         .attr('class', 'columns')
         .selectAll('text')
@@ -377,6 +396,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'start')
         .attr('font-size', FONT_SIZE);
+
+      // TODO: gray-out rows/cols of nodes that are not in the timestep
     }
 
     this.zoomFit();

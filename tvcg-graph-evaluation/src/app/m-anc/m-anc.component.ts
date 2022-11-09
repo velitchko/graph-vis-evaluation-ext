@@ -381,6 +381,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('fill-opacity', (d: Cell) => {
         return d.link ? d.time[timestep - 1] : 0;
       });
+    // TODO: gray-out rows/cols of nodes that are not in the timestep
   }
 
   render(): void {
