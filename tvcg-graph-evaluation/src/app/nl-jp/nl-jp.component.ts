@@ -6,7 +6,6 @@ import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, NUMBER
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
-import { group } from 'console';
 @Component({
   selector: 'app-nl-jp',
   templateUrl: './nl-jp.component.html',
