@@ -2,10 +2,11 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, NUMBER_OF_TIME_SLICES } from '../config';
+import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, NUMBER_OF_TIME_SLICES, JP_COL_COUNT, JP_ROW_COUNT } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
+import { group } from 'console';
 @Component({
   selector: 'app-nl-jp',
   templateUrl: './nl-jp.component.html',
@@ -42,6 +43,10 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   private numTimeSlices = 0;
   private cnt = 0;
 
+  public cols = JP_COL_COUNT;
+  public rows = JP_ROW_COUNT;
+  public timeSlices = NUMBER_OF_TIME_SLICES;
+
   constructor(private ds: DataService, private route: ActivatedRoute, private http: HttpClient) {
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
@@ -57,7 +62,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         this.graph = this.ds.getGraph(graph);
 
         this.numTimeSlices = this.graph.nodes[0].time.length;
-        this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
+        // this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
+        this.cnt = NUMBER_OF_TIME_SLICES;
       });
   }
 
@@ -78,7 +84,9 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   zooming($event: any): void {
-    this.g.attr('transform', $event.transform);
+    this.g.selectAll('.group-container').each((d, i, nodes) => {
+      d3.select(nodes[i]).attr('transform', $event.transform).attr('transform-origin', '0 0');
+    });
   }
 
   zoomEnd(): void {
@@ -174,11 +182,28 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     // .attr('transform', `translate(${-NODE_LINK_SIZE.WIDTH}, 0)`);
 
     for(let i = 1; i <= this.cnt; i++) {
-      this.g.append('g')
-      .attr('transform', `translate(${(i - 1)*NODE_LINK_SIZE.WIDTH}, 0)`)
+      const g = this.g.append('g');
+
+      g.append('clipPath')
+      .attr('id', `clip-T${i}`)
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', NODE_LINK_SIZE.WIDTH)
+      .attr('height', NODE_LINK_SIZE.HEIGHT)
+
+      g
+      .attr('transform', () => {
+        if(i <= this.cols) {
+          return `translate(${(i - 1)*NODE_LINK_SIZE.WIDTH}, 0)`;
+        } else {
+          return `translate(${((i - 1) % this.cols)*NODE_LINK_SIZE.WIDTH}, ${NODE_LINK_SIZE.HEIGHT})`;
+        }
+      })
       .attr('id', `T${i}`)
       .attr('width', NODE_LINK_SIZE.WIDTH)
-      .attr('height', NODE_LINK_SIZE.HEIGHT);
+      .attr('height', NODE_LINK_SIZE.HEIGHT)
+      ;
     }
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
@@ -210,8 +235,13 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('font-size', 24)
         .attr('font-weight', 'bold');
 
-      this.nodes = this.g.select(`#T${i}`).append('g').attr('class', 'nodes').selectAll('.node');
-      this.links = this.g.select(`#T${i}`).append('g').attr('class', 'links').selectAll('.link');
+      const groupContainer = this.g.select(`#T${i}`)
+      .append('g')
+      .attr('class', 'group-container')
+      .attr('id', `group-container-${i}`)
+
+      this.nodes = groupContainer.append('g').attr('class', 'nodes').selectAll('.node');
+      this.links = groupContainer.append('g').attr('class', 'links').selectAll('.link');
 
       // UPDATE
       this.nodes = this.nodes.data(this.graph.nodes);
@@ -231,7 +261,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
         .attr('cx', (d: Node) => { return d.x; })
         .attr('cy', (d: Node) => { return d.y; })
-        .attr('fill', 'darkgray');
+        .attr('fill', 'darkgray')
+        .attr('clip-path', `url(#clip-T${i})`);
   
       this.nodes.append('text')
         .text((d: Node) => { return d.label; })
@@ -239,7 +270,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
-        .attr('paint-order', 'stroke');;
+        .attr('paint-order', 'stroke')
+        .attr('clip-path', `url(#clip-T${i})`);
   
       // JOIN
       this.nodes = this.nodes
@@ -258,7 +290,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('class', 'link')
         .attr('stroke', 'darkgray')
         .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i-1]; })
-        .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH);
+        .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH)
+        .attr('clip-path', `url(#clip-T${i})`);
   
       // JOIN
       this.links = this.links
