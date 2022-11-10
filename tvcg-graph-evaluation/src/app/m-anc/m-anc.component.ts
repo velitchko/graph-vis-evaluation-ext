@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { DISPLAY_CONFIGURATION, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND, MATRIX_SIZE, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE } from '../config';
+import { DISPLAY_CONFIGURATION, ANIMATION_DURATION, ANIMATION_INCREMENT, ANIMATION_UPPER_BOUND, ANIMATION_LOWER_BOUND, MATRIX_SIZE, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE, NUMBER_OF_TIME_SLICES } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -86,7 +86,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
         const newOptions: Options = Object.assign({}, this.options);
         
         newOptions.ticksArray = _.range(1, this.graph.nodes[0].time.length + 1);
-        newOptions.ceil = this.graph.nodes[0].time.length;
+        newOptions.ceil = NUMBER_OF_TIME_SLICES; //this.graph.nodes[0].time.length;
 
         this.options = newOptions;
       });
@@ -103,6 +103,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
         l.source = sNode;
         l.target = tNode;
       });
+
+      this.ro.setGraph(this.graph.nodes, this.graph.links);
+      
       this.setup();
       this.init();
     }
@@ -114,8 +117,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
   }
 
   updateMatrix(newOrder: any): void {
-    console.log(newOrder);
-
     this.graph.nodes.sort((a: Node, b: Node) => {
       return newOrder.indexOf(+a.id) - newOrder.indexOf(+b.id);
     });
@@ -205,9 +206,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
     this.highlightStartTime = Date.now();
 
-    // if(!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+    if(!+($event.currentTarget as SVGElement).getAttribute('fill-opacity')) return;
 
-    d3.select(($event.currentTarget as any))
+    d3.select(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', 'red');
 
     let source = ($event.currentTarget as any).id.split('-')[0];
@@ -215,12 +216,12 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
     // row highlight
     d3.selectAll('.rows')
-      .select(`#${source}`)
+      .select(`#cell-${source}`)
       .attr('fill', 'red');
 
     // column highlight
     d3.selectAll('.columns')
-      .select(`#${target}`)
+      .select(`#cell-${target}`)
       .attr('fill', 'red');
 
     this.highlightedColumn
@@ -367,8 +368,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
-
-    this.ro.setGraph(this.graph.nodes, this.graph.links);
     
     this.render();
   }
@@ -384,7 +383,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
     } else {
       timestep = $event;
     }
-    console.log(timestep)
 
     this.timers.push({
       type: 'slider',
@@ -410,8 +408,10 @@ export class MAncComponent implements OnInit, AfterViewInit {
   render(): void {
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
+    // this.g.selectAll('.cell').remove();
 
     // UPDATE
+    // TODO: Figure out how to properly update the matrix on algorithm change
     this.cells = this.cells.data(this.matrix);
 
     // ENTER 
@@ -426,9 +426,11 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
       .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
-      .attr('id', (d: Cell) => { return d.id; })
+      .attr('id', (d: Cell) => { return `cell-${d.id}`; })
       .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-      .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[0] : 0; })
+      .attr('fill-opacity', (d: Cell) => { 
+        return d.link ? d.time[0] : 0; 
+      })
       .attr('fill', 'darkgray')
       .attr('stroke', '#999')
       .attr('stroke-width', '1px')
@@ -438,7 +440,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .on('mouseout', this.mouseOut.bind(this));
 
     // EXIT
-    this.cells.selectAll('.cell').remove();
+    // this.cells.selectAll('.cell').remove();
 
     // ROWS
     this.g.append('g')
@@ -447,7 +449,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .data(this.graph.nodes)
       .enter()
       .append('text')
-      .attr('id', (d: Node) => { return d.label; })
+      .attr('id', (d: Node) => { return `row-${d.label}`; })
       .attr('y', (d: Node, i: number) => {
         return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
       })
@@ -462,7 +464,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .data(this.graph.nodes)
       .enter()
       .append('text')
-      .attr('id', (d: Node) => { return d.label; })
+      .attr('id', (d: Node) => { return `col-${d.label}`; })
       .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
       .attr('y', (d: Node, i: number) => {
         return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
@@ -471,6 +473,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('text-anchor', 'start')
       .attr('font-size', FONT_SIZE);
 
-      this.zoomFit();
+      // this.zoomFit();
   }
 }
