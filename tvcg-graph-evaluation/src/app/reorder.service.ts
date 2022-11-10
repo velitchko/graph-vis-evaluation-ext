@@ -12,8 +12,23 @@ export class ReorderService {
     private leafOrder: any;
     private reorderGraph: any;
     private reorderMatrix: any;
+    public algorithms: Array<String>;
 
-    constructor() {}
+    constructor() {
+        this.algorithms = ['none', 'Leaforder', 'LeaforderDist', 'Barycenter', 'RCM', 'Spectral', 'NN2OPT'];
+    }
+
+    reorder(algorithm: String): any {
+        switch (algorithm) {
+            case 'Leaforder': return this.computeLeaforder();
+            case 'LeaforderDist': return this.computeLeaforderDist();
+            case 'Barycenter': return this.computeBarycenter();
+            case 'RCM': return this.computeRCM();
+            case 'Spectral': return this.computeSpectral();
+            case 'NN2OPT': return this.computeNN2OPT();
+            default: undefined;
+        }
+    }
 
     setGraph(nodes: Array<any>, links: Array<any>): void {
         this.reorderGraph = (reorder as any)
