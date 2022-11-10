@@ -1,5 +1,9 @@
 <div id="container" #container>
     <!-- <h3>m-jp</h3> -->
-    <!-- TODO: dropdown menu with different reordering algorithms -->
+    <select [(ngModel)]="selectedAlgorithm" (change)="updateOrder()">
+        <option *ngFor="let algorithm of ro.algorithms" [value]="algorithm">
+            {{algorithm}}
+        </option>
+    </select>
     <div id="svg-container-mjp"></div>
 </div>

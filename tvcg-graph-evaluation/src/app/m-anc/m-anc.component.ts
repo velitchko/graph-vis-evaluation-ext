@@ -39,6 +39,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
   sliderWidth: string;
 
+  // reorder stuff
+  public selectedAlgorithm: string = 'none';
+
   
   private animationHandle: any; // animation timer handler
   customAnimationSpeed: number;
@@ -105,6 +108,22 @@ export class MAncComponent implements OnInit, AfterViewInit {
     }
   }
 
+  updateOrder(): void {
+    const newOrder = this.ro.reorder(this.selectedAlgorithm);
+    this.updateMatrix(newOrder);
+  }
+
+  updateMatrix(newOrder: any): void {
+    console.log(newOrder);
+
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return newOrder.indexOf(+a.id) - newOrder.indexOf(+b.id);
+    });
+
+    this.matrix = new Array<Cell>();
+    
+    this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
+  }
   
   restart(): void {
     this.pause();
@@ -248,7 +267,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
     // }
   }
 
-  
   zoomFit() {
     const bounds = (this.svgContainer.node() as any).getBBox();
     
@@ -310,7 +328,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
 
-  init(): void {
+  init(sortDefault: boolean = true): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
       .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
@@ -327,9 +345,11 @@ export class MAncComponent implements OnInit, AfterViewInit {
       });
 
      // sort nodes alphabetically
-    this.graph.nodes.sort((a: Node, b: Node) => {
-      return a.label.localeCompare(b.label);
-    });
+    if(sortDefault) {
+      this.graph.nodes.sort((a: Node, b: Node) => {
+        return a.label.localeCompare(b.label);
+      });
+    }
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {

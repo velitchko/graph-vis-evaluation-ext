@@ -11,6 +11,7 @@ import { ReorderService  } from '../reorder.service';
   templateUrl: './m-jp.component.html',
   styleUrls: ['./m-jp.component.scss']
 })
+
 export class MJpComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
   private graph: Graph;
@@ -40,11 +41,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
   private cnt = 0;
   
   // reorder stuff
-  private adjacency: any;
-  private dist_adjacency: any;
-  private leafOrder: any;
-  private reorderGraph: any;
-  private reorderMatrix: any;
+  public selectedAlgorithm: string = 'none';
   
   public cols = JP_COL_COUNT;
   public rows = JP_ROW_COUNT;
@@ -93,6 +90,20 @@ export class MJpComponent implements OnInit, AfterViewInit {
     }
   }
 
+  updateOrder(): void {
+    const newOrder = this.ro.reorder(this.selectedAlgorithm);
+    this.updateMatrix(newOrder);
+  }
+
+  updateMatrix(newOrder: any): void {
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return newOrder.indexOf(+a.id) - newOrder.indexOf(+b.id);
+    });
+
+    this.matrix = new Array<Cell>();
+    
+    this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
+  }
 
   zoomStart(): void {
     this.zoomStartTime = Date.now();
@@ -120,6 +131,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: Event): void {
+    // FIXME: mouseover not working (cannot select the cell ? (unique ID issue?))
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
@@ -277,7 +289,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     // this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
 
-  init(): void {
+  init(sortDefault: boolean = true): void {
     console.log('initializing');
     let edgeHash = new Map<string, any>();
     this.graph.links
@@ -294,9 +306,11 @@ export class MJpComponent implements OnInit, AfterViewInit {
       });
 
      // sort nodes alphabetically
-    this.graph.nodes.sort((a: Node, b: Node) => {
-      return a.label.localeCompare(b.label);
-    });
+    if(sortDefault) {
+      this.graph.nodes.sort((a: Node, b: Node) => {
+        return a.label.localeCompare(b.label);
+      });
+    }
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
@@ -317,8 +331,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
     this.ro.setGraph(this.graph.nodes, this.graph.links);
 
-    const lo = this.ro.computeLeaforder();
-
     this.render();
   }
 
@@ -326,6 +338,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
     console.log('rendering');
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
+    this.g.selectAll('.cell').remove();
+    this.g.selectAll('.row-label').remove();
+    this.g.selectAll('.column-label').remove();
 
     for(let i = 1; i <= this.cnt; i++) {
       this.g.select(`#T${i}`)
@@ -380,6 +395,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .data(this.graph.nodes)
         .enter()
         .append('text')
+        .attr('class', 'row-label')
         .attr('id', (d: Node) => { return d.label; })
         .attr('y', (d: Node, i: number) => {
           return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
@@ -396,6 +412,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .data(this.graph.nodes)
         .enter()
         .append('text')
+        .attr('class' , 'column-label')
         .attr('id', (d: Node) => { return d.label; })
         .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
         .attr('y', (d: Node, i: number) => {
@@ -408,7 +425,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       // TODO: gray-out rows/cols of nodes that are not in the timestep
     }
 
-    this.zoomFit();
+    // this.zoomFit();
     console.log('rendered');
   }
 }

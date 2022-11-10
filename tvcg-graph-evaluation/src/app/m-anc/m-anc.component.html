@@ -17,6 +17,11 @@
             <i-bs name="skip-forward-fill" width="25" height="25"></i-bs>
         </button>
     </div>
+    <select [(ngModel)]="selectedAlgorithm" (change)="updateOrder()">
+        <option *ngFor="let algorithm of ro.algorithms" [value]="algorithm">
+            {{algorithm}}
+        </option>
+    </select>
     <!-- <h3>m-tl</h3> -->
     <div id="svg-container-manc"></div>
 </div>
