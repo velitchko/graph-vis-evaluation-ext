@@ -6,6 +6,7 @@ import RAMP from '../assets/ramp.json';
 import RUGBY from '../assets/rugby.json';
 import VANDEBUNT from '../assets/vandebunt.json';
 import SFG_EXAMPLE from '../assets/SFG_EXAMPLE.json';
+import MOOC from '../assets/mooc.json';
 @Injectable({
   providedIn: 'root'
 })
@@ -28,6 +29,7 @@ export class DataService {
   private graph_ramp = {};
   private graph_rugby = {};
   private graph_vandebunt = {};
+  private graph_mooc = {};
 
   // test - example
   private graph_example = {};
@@ -43,6 +45,7 @@ export class DataService {
     this.graph_ramp = RAMP;
     this.graph_rugby = RUGBY;
     this.graph_vandebunt = VANDEBUNT;
+    this.graph_mooc = MOOC;
   }
 
   getGraph(graph: string): Graph {
@@ -54,6 +57,7 @@ export class DataService {
       case 'ramp': return new Graph(this.graph_ramp['nodes'], this.graph_ramp['links']);
       case 'rugby': return new Graph(this.graph_rugby['nodes'], this.graph_rugby['links']);
       case 'vandebunt': return new Graph(this.graph_vandebunt['nodes'], this.graph_vandebunt['links']);
+      case 'mooc': return new Graph(this.graph_mooc['nodes'], this.graph_mooc['links']);
       default: return  new Graph(this.graph_example['nodes'], this.graph_example['links']);
     }
   }
