@@ -7,6 +7,10 @@ import RUGBY from '../assets/rugby.json';
 import VANDEBUNT from '../assets/vandebunt.json';
 import SFG_EXAMPLE from '../assets/SFG_EXAMPLE.json';
 import MOOC from '../assets/mooc.json';
+import BITALPHA from '../assets/bitalpha.json';
+import BITOTC from '../assets/bitotc.json';
+import REALITY from '../assets/reality.json';
+import COLLEGE from '../assets/college.json';
 @Injectable({
   providedIn: 'root'
 })
@@ -30,6 +34,10 @@ export class DataService {
   private graph_rugby = {};
   private graph_vandebunt = {};
   private graph_mooc = {};
+  private graph_bitalpha = {};
+  private graph_bitotc = {};
+  private graph_reality = {};
+  private graph_college = {};
 
   // test - example
   private graph_example = {};
@@ -37,7 +45,6 @@ export class DataService {
 
   constructor() { 
     this.graph_infovis = INFOVIS;
-    console.log(this.graph_infovis);
     // test - example
     this.graph_example = SFG_EXAMPLE;
     this.graph_newcomb = NEWCOMB;
@@ -46,6 +53,10 @@ export class DataService {
     this.graph_rugby = RUGBY;
     this.graph_vandebunt = VANDEBUNT;
     this.graph_mooc = MOOC;
+    this.graph_bitalpha = BITALPHA;
+    this.graph_bitotc = BITOTC;
+    this.graph_reality = REALITY;
+    this.graph_college = COLLEGE;
   }
 
   getGraph(graph: string): Graph {
@@ -58,6 +69,10 @@ export class DataService {
       case 'rugby': return new Graph(this.graph_rugby['nodes'], this.graph_rugby['links']);
       case 'vandebunt': return new Graph(this.graph_vandebunt['nodes'], this.graph_vandebunt['links']);
       case 'mooc': return new Graph(this.graph_mooc['nodes'], this.graph_mooc['links']);
+      case 'bitalpha': return new Graph(this.graph_bitalpha['nodes'], this.graph_bitalpha['links']);
+      case 'bitotc': return new Graph(this.graph_bitotc['nodes'], this.graph_bitotc['links']);
+      case 'reality': return new Graph(this.graph_reality['nodes'], this.graph_reality['links']);
+      case 'college': return new Graph(this.graph_college['nodes'], this.graph_college['links']);
       default: return  new Graph(this.graph_example['nodes'], this.graph_example['links']);
     }
   }
