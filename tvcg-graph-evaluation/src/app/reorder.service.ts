@@ -71,13 +71,11 @@ export class ReorderService {
         const barycenter = (reorder as any).barycenter_order(this.reorderGraph);
         const improved = (reorder as any).adjacent_exchange(this.reorderGraph, barycenter[0], barycenter[1]);
         improved[0].forEach((lo: any, i: number) => {
-            console.log(this.reorderGraph.nodes()[i], lo, i);
             this.reorderGraph.nodes()[i].barycenter = lo;
         });
 
         return this.reorderGraph.nodes().map((n: any) => {
             // FIXME: barycenter is undefined in the last couple of nodes
-            console.log(n.barycenter)
             return n.barycenter;
         });
     }
