@@ -6,7 +6,7 @@ import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
-
+import { ReorderService } from '../reorder.service';
 @Component({
   selector: 'app-m-anc',
   templateUrl: './m-anc.component.html',
@@ -55,7 +55,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     }
   };
 
-  constructor(private ds: DataService, private route: ActivatedRoute) {
+  constructor(private ds: DataService, private ro: ReorderService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
@@ -347,6 +347,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
+
+    this.ro.setGraph(this.graph.nodes, this.graph.links);
+    
     this.render();
   }
 

@@ -5,9 +5,8 @@ import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, 
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
-import * as reorder from 'reorder.js';
-import { group } from 'console';
-  @Component({
+import { ReorderService  } from '../reorder.service';
+@Component({
   selector: 'app-m-jp',
   templateUrl: './m-jp.component.html',
   styleUrls: ['./m-jp.component.scss']
@@ -39,7 +38,13 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
   private numTimeSlices = 0;
   private cnt = 0;
-
+  
+  // reorder stuff
+  private adjacency: any;
+  private dist_adjacency: any;
+  private leafOrder: any;
+  private reorderGraph: any;
+  private reorderMatrix: any;
   
   public cols = JP_COL_COUNT;
   public rows = JP_ROW_COUNT;
@@ -51,7 +56,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     ceil: 4
   };
 
-  constructor(private ds: DataService, private route: ActivatedRoute) {
+  constructor(private ds: DataService, private ro: ReorderService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
@@ -309,8 +314,11 @@ export class MJpComponent implements OnInit, AfterViewInit {
           this.matrix.push(cell);
         });
     });
-    console.log(this.matrix);
-    console.log('initialized');
+
+    this.ro.setGraph(this.graph.nodes, this.graph.links);
+
+    const lo = this.ro.computeLeaforder();
+
     this.render();
   }
 
