@@ -11,6 +11,7 @@ import { MJpComponent } from './m-jp/m-jp.component';
 import { MAncComponent } from './m-anc/m-anc.component';
 
 import { DataService } from './data.service';
+import { ReorderService } from './reorder.service';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
@@ -37,7 +38,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     NgxBootstrapIconsModule.pick(allIcons),
     BrowserAnimationsModule
   ],
-  providers: [DataService],
+  providers: [DataService, ReorderService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
