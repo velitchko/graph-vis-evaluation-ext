@@ -1,5 +1,6 @@
 <div id="container" #container>
     <!-- <h3>m-jp</h3> -->
+    <p>reordering algorithm:</p>
     <select [(ngModel)]="selectedAlgorithm" (change)="updateOrder()">
         <option *ngFor="let algorithm of ro.algorithms" [value]="algorithm">
             {{algorithm}}

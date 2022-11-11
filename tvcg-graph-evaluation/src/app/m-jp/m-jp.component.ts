@@ -5,7 +5,7 @@ import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, 
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
-import { ReorderService  } from '../reorder.service';
+import { ReorderService } from '../reorder.service';
 @Component({
   selector: 'app-m-jp',
   templateUrl: './m-jp.component.html',
@@ -39,14 +39,14 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
   private numTimeSlices = 0;
   private cnt = 0;
-  
+
   // reorder stuff
   public selectedAlgorithm: string = 'none';
-  
+
   public cols = JP_COL_COUNT;
   public rows = JP_ROW_COUNT;
   public timeSlices = NUMBER_OF_TIME_SLICES;
-  
+
   value: number = 1;
   options: Options = {
     floor: 1,
@@ -67,7 +67,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
-
+        console.log(this.graph)
         this.numTimeSlices = this.graph.nodes[0].time.length;
         //this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
         this.cnt = 8;
@@ -85,6 +85,10 @@ export class MJpComponent implements OnInit, AfterViewInit {
         l.source = sNode;
         l.target = tNode;
       });
+
+
+      this.ro.setGraph(this.graph.nodes, this.graph.links);
+
       this.setup();
       this.init();
     }
@@ -101,7 +105,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     });
 
     this.matrix = new Array<Cell>();
-    
+
     this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
   }
 
@@ -110,10 +114,13 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   zooming($event: any): void {
-    this.g.selectAll('.group-container').each((d, i, nodes) => {
-      d3.select(nodes[i]).attr('transform', $event.transform).attr('transform-origin', '0 0');
-    });
+    // FIXME: Fix zooming and make it constant on reordering
+    d3.selectAll('.matrix-container').each((d, i, nodes) => {
 
+      const node = d3.select(nodes[i])
+      node.attr('transform', `${$event.transform}`)
+        .attr('transform-origin', 'center')
+    });
   }
 
   zoomEnd(): void {
@@ -131,12 +138,11 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: Event): void {
-    // FIXME: mouseover not working (cannot select the cell ? (unique ID issue?))
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
 
-    // if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
+    if (!+($event.currentTarget as SVGElement).getAttribute('link')) return;
 
     d3.selectAll(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
@@ -146,29 +152,31 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
     // row highlight
     d3.selectAll('.rows')
-      .select(`#${source}`)
+      .select(`#cell-${source}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
 
     // column highlight
     d3.selectAll('.columns')
-      .select(`#${target}`)
+      .select(`#cell-${target}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
 
     // timeslice count
-    
-    for(let i = 1; i <= this.cnt; i++) {
+    // FIXME: fix the highlighting rows/cols for the 2nd row (4+ timeslices)  
+    for (let i = 1; i <= this.cnt; i++) {
       d3
         .select(`#highlighted-column-T${i}`)
         .attr('fill-opacity', 0.25)
-        .attr('x', MATRIX_SIZE.WIDTH*(i-1) + ($event.currentTarget as any).x.baseVal.value)
+        .attr('x', MATRIX_SIZE.WIDTH * (i - 1) + +($event.currentTarget as any).x.baseVal.value)
         .attr('y', 0)
-        .attr('height', ($event.currentTarget as any).y.baseVal.value);
+        .attr('height', (_: any) => { return i <= 4 ? ($event.currentTarget as any).y.baseVal.value : 200 * i; });
 
       d3
         .select(`#highlighted-row-T${i}`)
         .attr('fill-opacity', 0.25)
-        .attr('x', MATRIX_SIZE.WIDTH*(i-1))
-        .attr('y', ($event.currentTarget as any).y.baseVal.value)
+        .attr('x', MATRIX_SIZE.WIDTH * (i - 1))
+        .attr('y', (_) => {
+          return ($event.currentTarget as any).y.baseVal.value;
+        })
         .attr('width', ($event.currentTarget as any).x.baseVal.value);
     }
   }
@@ -184,7 +192,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     d3.selectAll('text')
       .attr('fill', 'black');
 
-    for(let i = 1; i <= this.cnt; i++) {
+    for (let i = 1; i <= this.cnt; i++) {
       d3
         .select(`#highlighted-column-T${i}`)
         .attr('fill-opacity', 0);
@@ -196,7 +204,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
     // if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
     const highlightTime = this.highlightEndTime - this.highlightStartTime;
-    if(highlightTime >= 200) {// log if it took more than 200ms
+    if (highlightTime >= 200) {// log if it took more than 200ms
       this.timers.push({
         type: 'highlight',
         time: highlightTime
@@ -209,88 +217,59 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   zoomFit() {
-    const bounds = (this.svgContainer.node() as any).getBBox();
-    
-    const fullWidth = this.width;
-    const fullHeight = this.height;
-    
-    const width = bounds.width;
-    const height = bounds.height;
-    
-    const midX = bounds.x + width / 2;
-    const midY = bounds.y + height / 2;
+    for (let i = 1; i <= this.cnt; i++) {
+      this.svgContainer = d3.select(`#jp-${i}`)
+      const bounds = (this.svgContainer.node() as any).getBBox();
 
-    if (width == 0 || height == 0) return; // nothing to fit
+      const fullWidth = this.width / 4;
+      const fullHeight = this.height / 2;
 
-    const scale = 0.95 / Math.max(width / fullWidth, height / fullHeight);
-    // const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
-    
-    this.g
-    .attr('transform', `scale(${scale}) translate(${ SVG_MARGIN.left }, 100)`);
-}
+      const width = bounds.width;
+      const height = bounds.height;
 
+      if (width == 0 || height == 0) return; // nothing to fit
+
+      const scale = 1 / Math.max(width / fullWidth, height / fullHeight);
+
+      this.svgContainer.select(`#matrix-container-${i}`).attr('transform', `translate(20, 50) scale(${scale}) `);
+    }
+  }
 
   setup(): void {
-    console.log('setting up');
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
+      // .translateExtent([[0, 0], [this.width, this.height]])
+      .extent([[0, 0], [this.width, this.height]])
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
 
-    this.svgContainer = (d3.select('#svg-container-mjp') as any)
-      .append('svg')
-      .attr('viewBox', [0, 0, this.width, this.height])
-      .attr('width', this.width)
-      .attr('height', this.height)
-      .call(this.zoom);
+    for (let i = 1; i <= this.cnt; i++) {
+      (d3.select('#svg-container-mjp') as any)
+        .append('svg')
+        .attr('width', this.width / 4)
+        .attr('height', this.height / 2)
+        .attr('id', `jp-${i}`)
+        .call(this.zoom)
 
-    this.g = this.svgContainer.append('g')
-      .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
-    for(let i = 1; i <= this.cnt; i++) {
-      this.g.append('rect')
-        .attr('class', 'highlighted-row')
-        .attr('id', `highlighted-row-T${i}`)
-        .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
-        .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
-        .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR)
-        .attr('fill-opacity', 0)
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('point-events', 'none');
-  
-      this.g.append('rect')
-        .attr('class', 'highlighted-column')
-        .attr('id', `highlighted-column-T${i}`)
-        .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
-        .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
-        .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR)
-        .attr('fill-opacity', 0)
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('point-events', 'none');
+      this.svgContainer = d3.select(`#jp-${i}`);
 
-      this.g.append('g')
-      .attr('x', 0)
-      .attr('y', -50)
-      .attr('transform', () => {
-        if(i <= this.cols) {
-          return `translate(${(i - 1)*MATRIX_SIZE.WIDTH}, 0)`;
-        } else {
-          return `translate(${((i - 1) % this.cols)*MATRIX_SIZE.WIDTH}, ${MATRIX_SIZE.HEIGHT})`;
-        }
-      })
-      .attr('id', `T${i}`);
+      this.svgContainer.append('rect')
+        .attr('width', this.width / 4 - 5)
+        .attr('height', this.height / 2 - 5)
+        .attr('x', 5)
+        .attr('y', 5)
+        .attr('fill', 'none')
+        .attr('stroke', 'gray');
+
+      let g = this.svgContainer.append('g')
+        .attr('class', 'jp-wrapper')
+        .attr('id', `jp-wrapper-${i}`);
     }
-
-    this.highlightedRow = this.g.selectAll('highlighted-row');
-    this.highlightedColumn = this.g.selectAll('highlighted-column');
-    // this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
 
   init(sortDefault: boolean = true): void {
-    console.log('initializing');
     let edgeHash = new Map<string, any>();
     this.graph.links
       .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
@@ -305,8 +284,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
         edgeHash.set(idB, link);
       });
 
-     // sort nodes alphabetically
-    if(sortDefault) {
+    // sort nodes alphabetically
+    if (sortDefault) {
       this.graph.nodes.sort((a: Node, b: Node) => {
         return a.label.localeCompare(b.label);
       });
@@ -325,67 +304,83 @@ export class MJpComponent implements OnInit, AfterViewInit {
           cell.link = 1;
           cell.time = edgeHash.get(cell.id).time;
         }
-          this.matrix.push(cell);
-        });
+        this.matrix.push(cell);
+      });
     });
-
-    this.ro.setGraph(this.graph.nodes, this.graph.links);
 
     this.render();
   }
 
   render(): void {
-    console.log('rendering');
-    this.g.selectAll('.rows').remove();
-    this.g.selectAll('.columns').remove();
-    this.g.selectAll('.cell').remove();
-    this.g.selectAll('.row-label').remove();
-    this.g.selectAll('.column-label').remove();
+    d3.selectAll('.matrix-container').remove();
 
-    for(let i = 1; i <= this.cnt; i++) {
-      this.g.select(`#T${i}`)
-      .append('text')
-      .text(`Time Step: ${i}`)
-      .attr('x', 0)
-      .attr('y', -50)
-      .attr('font-size', 24)
-      .attr('font-weight', 'bold');
+    for (let i = 1; i <= this.cnt; i++) {
+      const jpWrapper = d3.select(`#jp-wrapper-${i}`);
+      jpWrapper
+        .append('text')
+        .text(`Time Step: ${i}`)
+        .attr('class', 'time-label')
+        .attr('x', 10)
+        .attr('y', 25)
+        .attr('font-size', 24)
+        .attr('font-weight', 'bold');
 
-      const groupContainer = this.g.select(`#T${i}`)
-      .append('g')
-      .attr('class', 'group-container')
-      .attr('id', `group-container-${i}`)
+      let groupContainer = jpWrapper.append('g')
+        .attr('class', 'matrix-container')
+        .attr('id', `matrix-container-${i}`);
 
-      this.cells = groupContainer.append('g').attr('class', 'cells').selectAll('.cell');
+      groupContainer.append('rect')
+        .attr('class', 'highlighted-row')
+        .attr('id', `highlighted-row-T${i}`)
+        .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE / 4)
+        .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE / 4)
+        .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR)
+        .attr('fill-opacity', 0)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('point-events', 'none');
+
+      groupContainer.append('rect')
+        .attr('class', 'highlighted-column')
+        .attr('id', `highlighted-column-T${i}`)
+        .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE / 4)
+        .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE / 4)
+        .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR)
+        .attr('fill-opacity', 0)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('point-events', 'none');
+
+      let cells = groupContainer.append('g').attr('class', 'cells').selectAll('.cell');
 
       // UPDATE
-      this.cells = this.cells.data(this.matrix);
+      cells = cells.data(this.matrix);
 
       // ENTER 
-      this.cells = this.cells
+      cells = cells
         .enter()
         .append('rect')
         .attr('class', 'cell');
 
       // JOIN
-      this.cells
-        .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
-        .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
-        .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
-        .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
-        .attr('id', (d: Cell) => { return d.id; })
+      cells
+        .attr('width', (DISPLAY_CONFIGURATION.CELL_SIZE / 4))
+        .attr('height', (DISPLAY_CONFIGURATION.CELL_SIZE / 4))
+        .attr('x', (d: Cell) => { return d.x * (DISPLAY_CONFIGURATION.CELL_SIZE / 4); })
+        .attr('y', (d: Cell) => { return d.y * (DISPLAY_CONFIGURATION.CELL_SIZE / 4); })
+        .attr('id', (d: Cell) => { return `cell-${d.id}`; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i-1] : 0;  })
+        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i - 1] : 0; })
         .attr('fill', (d: Cell) => { return 'darkgray'; })
         .attr('stroke', '#999')
         .attr('stroke-width', '1px')
         .attr('stroke-opacity', .25)
-        .merge(this.cells)
+        .merge(cells)
         .on('mouseover', this.mouseOver.bind(this))
         .on('mouseout', this.mouseOut.bind(this));;
 
       // EXIT
-      this.cells.selectAll('.cell').remove();
+      cells.selectAll('.cell').remove();
 
       // ROWS
       groupContainer
@@ -396,13 +391,13 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .enter()
         .append('text')
         .attr('class', 'row-label')
-        .attr('id', (d: Node) => { return d.label; })
+        .attr('id', (d: Node) => { return `row-${d.label}`; })
         .attr('y', (d: Node, i: number) => {
-          return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
+          return i * (DISPLAY_CONFIGURATION.CELL_SIZE / 4) + (DISPLAY_CONFIGURATION.CELL_SIZE / 4);
         })
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'end')
-        .attr('font-size', FONT_SIZE);
+        .attr('font-size', 4);
 
       // COLUMNS
       groupContainer
@@ -412,20 +407,17 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .data(this.graph.nodes)
         .enter()
         .append('text')
-        .attr('class' , 'column-label')
-        .attr('id', (d: Node) => { return d.label; })
+        .attr('class', 'column-label')
+        .attr('id', (d: Node) => { return `col-${d.label}`; })
         .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
         .attr('y', (d: Node, i: number) => {
-          return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
+          return i * (DISPLAY_CONFIGURATION.CELL_SIZE / 4) + (DISPLAY_CONFIGURATION.CELL_SIZE / 4);
         })
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'start')
-        .attr('font-size', FONT_SIZE);
+        .attr('font-size', 4)
 
-      // TODO: gray-out rows/cols of nodes that are not in the timestep
+      this.zoomFit();
     }
-
-    // this.zoomFit();
-    console.log('rendered');
   }
 }
