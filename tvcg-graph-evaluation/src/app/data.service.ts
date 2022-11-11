@@ -11,6 +11,7 @@ import BITALPHA from '../assets/bitalpha.json';
 import BITOTC from '../assets/bitotc.json';
 import REALITY from '../assets/reality.json';
 import COLLEGE from '../assets/college.json';
+import GENERATED from '../assets/generated.json';
 @Injectable({
   providedIn: 'root'
 })
@@ -38,6 +39,7 @@ export class DataService {
   private graph_bitotc = {};
   private graph_reality = {};
   private graph_college = {};
+  private graph_generated = {};
 
   // test - example
   private graph_example = {};
@@ -57,6 +59,7 @@ export class DataService {
     this.graph_bitotc = BITOTC;
     this.graph_reality = REALITY;
     this.graph_college = COLLEGE;
+    this.graph_generated = GENERATED;
   }
 
   getGraph(graph: string): Graph {
@@ -73,6 +76,7 @@ export class DataService {
       case 'bitotc': return new Graph(this.graph_bitotc['nodes'], this.graph_bitotc['links']);
       case 'reality': return new Graph(this.graph_reality['nodes'], this.graph_reality['links']);
       case 'college': return new Graph(this.graph_college['nodes'], this.graph_college['links']);
+      case 'generated': return new Graph(this.graph_generated['nodes'], this.graph_generated['links']);
       default: return  new Graph(this.graph_example['nodes'], this.graph_example['links']);
     }
   }
