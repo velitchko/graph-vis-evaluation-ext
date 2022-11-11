@@ -30,7 +30,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
   private highlightStartTime: number;
   private highlightEndTime: number;
-  
+
   private timers: Array<{ type: string, time: number }>; // interaction type + time in seconds
   private interactions: { zooms: number, highlights: number, slider: number, faster: number, slower: number }; // number of zooms, drags
 
@@ -42,7 +42,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
   // reorder stuff
   public selectedAlgorithm: string = 'none';
 
-  
+
   private animationHandle: any; // animation timer handler
   customAnimationSpeed: number;
 
@@ -84,7 +84,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
         // update slider time steps
         const newOptions: Options = Object.assign({}, this.options);
-        
+
         newOptions.ticksArray = _.range(1, this.graph.nodes[0].time.length + 1);
         newOptions.ceil = NUMBER_OF_TIME_SLICES; //this.graph.nodes[0].time.length;
 
@@ -105,7 +105,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       });
 
       this.ro.setGraph(this.graph.nodes, this.graph.links);
-      
+
       this.setup();
       this.init();
     }
@@ -122,7 +122,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     });
 
     this.matrix = new Array<Cell>();
-    
+
     this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
 
     this.cells = this.cells.data(this.matrix);
@@ -132,14 +132,14 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('x', (d: Cell) => { return d.x*DISPLAY_CONFIGURATION.CELL_SIZE; })
-      .attr('y', (d: Cell) => { return d.y*DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
 
     // ROWS
     const rows = this.g.selectAll('.row-label');
 
-      rows
+    rows
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
@@ -154,7 +154,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .ease(d3.easeCubicOut)
       .attr('y', (d: Node) => { return newOrder.indexOf(d.id) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; });
   }
-  
+
   restart(): void {
     this.pause();
     this.start();
@@ -207,7 +207,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
   animate(): void {
     this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
-  
+
   zoomStart(): void {
     this.zoomStartTime = Date.now();
   }
@@ -235,7 +235,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
     this.highlightStartTime = Date.now();
 
-    if(!+($event.currentTarget as SVGElement).getAttribute('fill-opacity')) return;
+    if (!+($event.currentTarget as SVGElement).getAttribute('fill-opacity')) return;
 
     d3.select(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', 'red');
@@ -285,12 +285,12 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
     // if(+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
     const highlightTime = this.highlightEndTime - this.highlightStartTime;
-    if(highlightTime >= 200) { // log if it took more than 200ms
+    if (highlightTime >= 200) { // log if it took more than 200ms
       this.timers.push({
         type: 'highlight',
         time: highlightTime
       });
-  
+
       this.interactions.highlights++;
       parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
     }
@@ -299,30 +299,30 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
   zoomFit() {
     const bounds = (this.svgContainer.node() as any).getBBox();
-    
+
     const fullWidth = this.width;
     const fullHeight = this.height;
-    
+
     const width = bounds.width;
     const height = bounds.height;
 
     const midX = bounds.x + width / 2;
     const midY = bounds.y + height / 2;
-  
+
     if (width == 0 || height == 0) return; // nothing to fit
 
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
     this.g.attr('transform', `scale(${scale}) translate(50, 50)`);
-}
+  }
 
   setup(): void {
     this.zoom = d3.zoom()
-    .scaleExtent([0.1, 10])
-    .on('start', this.zoomStart.bind(this))
-    .on('zoom', this.zooming.bind(this))
-    .on('end', this.zoomEnd.bind(this));
+      .scaleExtent([0.1, 10])
+      .on('start', this.zoomStart.bind(this))
+      .on('zoom', this.zooming.bind(this))
+      .on('end', this.zoomEnd.bind(this));
 
     this.svgContainer = (d3.select('#svg-container-manc') as any)
       .append('svg')
@@ -334,26 +334,26 @@ export class MAncComponent implements OnInit, AfterViewInit {
     this.g = this.svgContainer.append('g')
       .attr('transform', `translate(${SVG_MARGIN.left}, ${SVG_MARGIN.top})`);
 
-      
-    this.highlightedRow = this.g.append('rect')
-    .attr('class', 'highlighted-row')
-    .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
-    .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
-    .attr('fill', 'red')
-    .attr('fill-opacity', 0)
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr('point-events', 'none');
 
-  this.highlightedColumn = this.g.append('rect')
-    .attr('class', 'highlighted-column')
-    .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
-    .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
-    .attr('fill', 'red')
-    .attr('fill-opacity', 0)
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr('point-events', 'none');
+    this.highlightedRow = this.g.append('rect')
+      .attr('class', 'highlighted-row')
+      .attr('width', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('fill', 'red')
+      .attr('fill-opacity', 0)
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('point-events', 'none');
+
+    this.highlightedColumn = this.g.append('rect')
+      .attr('class', 'highlighted-column')
+      .attr('width', DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('height', this.graph.nodes.length * DISPLAY_CONFIGURATION.CELL_SIZE)
+      .attr('fill', 'red')
+      .attr('fill-opacity', 0)
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('point-events', 'none');
 
     this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
@@ -365,7 +365,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .forEach((link: Link<Node>) => {
         // Undirected graph - duplicate link s-t && t-s
         let idA: string, idB: string = '';
-        if (link.source  === link.target) return;
+        if (link.source === link.target) return;
 
         idA = `${(link.source as Node).label}-${(link.target as Node).label}`;
         idB = `${(link.target as Node).label}-${(link.source as Node).label}`;
@@ -374,8 +374,8 @@ export class MAncComponent implements OnInit, AfterViewInit {
         edgeHash.set(idB, link);
       });
 
-     // sort nodes alphabetically
-    if(sortDefault) {
+    // sort nodes alphabetically
+    if (sortDefault) {
       this.graph.nodes.sort((a: Node, b: Node) => {
         return a.label.localeCompare(b.label);
       });
@@ -397,8 +397,8 @@ export class MAncComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
-    
-    if(sortDefault) this.render();
+
+    if (sortDefault) this.render();
   }
 
 
@@ -406,10 +406,10 @@ export class MAncComponent implements OnInit, AfterViewInit {
     if (!this.graph) return;
 
     let timestep = undefined;
-    
-    if(!$event) {
-      this.value = (this.value === this.options.ceil) ? 1 : this.value+1;
-      timestep = this.value 
+
+    if (!$event) {
+      this.value = (this.value === this.options.ceil) ? 1 : this.value + 1;
+      timestep = this.value
     } else {
       timestep = $event;
     }
@@ -421,9 +421,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
     // TODO: this depends on if play or using slider
     this.interactions.slider++;
-    
+
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
-    
+
     // CELLS
     this.cells
       .transition()
@@ -432,7 +432,16 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('fill-opacity', (d: Cell) => {
         return d.link ? d.time[timestep - 1] : 0;
       });
-    // TODO: gray-out rows/cols of nodes that are not in the timestep
+
+    this.g.selectAll('.row-label')
+      .attr('fill-opacity', (d: Node, i: number) => {
+        return d.time[timestep - 1] ? 1 : 0.2;
+      });
+
+    this.g.selectAll('.column-label')
+      .attr('fill-opacity', (d: Node, i: number) => {
+        return d.time[timestep - 1] ? 1 : 0.2;
+      });
   }
 
   render(): void {
@@ -441,7 +450,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
     // this.g.selectAll('.cell').remove();
 
     // UPDATE
-    // TODO: Figure out how to properly update the matrix on algorithm change
     this.cells = this.cells.data(this.matrix);
 
     // ENTER 
@@ -458,8 +466,8 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('id', (d: Cell) => { return `cell-${d.id}`; })
       .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
-      .attr('fill-opacity', (d: Cell) => { 
-        return d.link ? d.time[0] : 0; 
+      .attr('fill-opacity', (d: Cell) => {
+        return d.link ? d.time[0] : 0;
       })
       .attr('fill', 'darkgray')
       .attr('stroke', '#999')
@@ -505,6 +513,15 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('text-anchor', 'start')
       .attr('font-size', FONT_SIZE);
 
-      // this.zoomFit();
+      this.g.selectAll('.row-label')
+      .attr('fill-opacity', (d: Node, i: number) => {
+        return d.time[0] ? 1 : 0.2;
+      });
+
+    this.g.selectAll('.column-label')
+      .attr('fill-opacity', (d: Node, i: number) => {
+        return d.time[0] ? 1 : 0.2;
+      });
+    this.zoomFit();
   }
 }
