@@ -124,6 +124,35 @@ export class MAncComponent implements OnInit, AfterViewInit {
     this.matrix = new Array<Cell>();
     
     this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
+
+    this.cells = this.cells.data(this.matrix);
+
+    // CELLS
+    this.cells
+      .transition()
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut)
+      .attr('x', (d: Cell) => { return d.x*DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('y', (d: Cell) => { return d.y*DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
+
+    // ROWS
+    const rows = this.g.selectAll('.row-label');
+
+      rows
+      .transition()
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut)
+      .attr('y', (d: Node) => { return newOrder.indexOf(d.id) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; })
+
+    // COLUMNS
+    const cols = this.g.selectAll('.column-label');
+
+    cols
+      .transition()
+      .duration(TRANSITION_DURATION)
+      .ease(d3.easeCubicOut)
+      .attr('y', (d: Node) => { return newOrder.indexOf(d.id) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; });
   }
   
   restart(): void {
@@ -369,8 +398,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
       });
     });
     
-    this.render();
+    if(sortDefault) this.render();
   }
+
 
   update($event: number): void {
     if (!this.graph) return;
@@ -440,7 +470,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .on('mouseout', this.mouseOut.bind(this));
 
     // EXIT
-    // this.cells.selectAll('.cell').remove();
+    this.cells.selectAll('.cell').remove();
 
     // ROWS
     this.g.append('g')
@@ -449,6 +479,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .data(this.graph.nodes)
       .enter()
       .append('text')
+      .attr('class', 'row-label')
       .attr('id', (d: Node) => { return `row-${d.label}`; })
       .attr('y', (d: Node, i: number) => {
         return i * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE;
@@ -464,6 +495,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .data(this.graph.nodes)
       .enter()
       .append('text')
+      .attr('class', 'column-label')
       .attr('id', (d: Node) => { return `col-${d.label}`; })
       .attr('transform', 'rotate(-90)') // Due to rotation X is now Y
       .attr('y', (d: Node, i: number) => {
