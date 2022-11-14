@@ -24,8 +24,8 @@ export const MATRIX_SIZE = {
 };
 
 export const NODE_LINK_SIZE = {
-    WIDTH: 840, // placeholder
-    HEIGHT: 640 // placeholder
+    WIDTH: 800, // placeholder
+    HEIGHT: 800 // placeholder
 };
 
 export const SIMULATION_CONFIGURATION = {
