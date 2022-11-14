@@ -147,9 +147,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
     d3.selectAll(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
 
-    let source = ($event.currentTarget as any).id.split('-')[0];
-    let target = ($event.currentTarget as any).id.split('-')[1];
-
+    let source = ($event.currentTarget as any).id.replace('cell-', '').split('-')[0];
+    let target = ($event.currentTarget as any).id.replace('cell-', '').split('-')[1];
+    
     // row highlight
     d3.selectAll('.rows')
       .select(`#cell-${source}`)
@@ -159,21 +159,27 @@ export class MJpComponent implements OnInit, AfterViewInit {
     d3.selectAll('.columns')
       .select(`#cell-${target}`)
       .attr('fill', DISPLAY_CONFIGURATION.ROW_COL_HIGHLIGHT_COLOR);
+    
+    // tooltip
+    d3.select('#tooltip')
+      .style('left', `${($event as any).pageX + 10}px`)
+      .style('top', `${($event as any).pageY + 10}px`)
+      .style('display', 'inline-block')
+      .html(`Source: ${source}<br/>Target: ${target}`);
 
-    // timeslice count
-    // FIXME: fix the highlighting rows/cols for the 2nd row (4+ timeslices)  
     for (let i = 1; i <= this.cnt; i++) {
-      d3
+      d3 
         .select(`#highlighted-column-T${i}`)
         .attr('fill-opacity', 0.25)
-        .attr('x', MATRIX_SIZE.WIDTH * (i - 1) + +($event.currentTarget as any).x.baseVal.value)
+        .attr('x',+($event.currentTarget as any).x.baseVal.value)
         .attr('y', 0)
-        .attr('height', (_: any) => { return i <= 4 ? ($event.currentTarget as any).y.baseVal.value : 200 * i; });
+        .attr('height', (_: any) => { return ($event.currentTarget as any).y.baseVal.value; });
 
       d3
+        
         .select(`#highlighted-row-T${i}`)
         .attr('fill-opacity', 0.25)
-        .attr('x', MATRIX_SIZE.WIDTH * (i - 1))
+        .attr('x', 0)
         .attr('y', (_) => {
           return ($event.currentTarget as any).y.baseVal.value;
         })
@@ -202,6 +208,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('fill-opacity', 0);
     }
 
+    d3.select('#tooltip')
+      .style('display', 'none');
+
     // if (+($event.currentTarget as SVGElement).getAttribute('link')) { // log highlights only if relationships exists
     const highlightTime = this.highlightEndTime - this.highlightStartTime;
     if (highlightTime >= 200) {// log if it took more than 200ms
@@ -217,21 +226,32 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   zoomFit() {
+    // FIXME: Fix zoom fit - still not working properly
     for (let i = 1; i <= this.cnt; i++) {
-      this.svgContainer = d3.select(`#jp-${i}`)
-      const bounds = (this.svgContainer.node() as any).getBBox();
-
-      const fullWidth = this.width / 4;
-      const fullHeight = this.height / 2;
+      const jpWrapper = d3.select(`#jp-wrapper-${i}`);
+      
+      const bounds = (jpWrapper.node() as any).getBBox();
+      
+      const parent = 	(jpWrapper.node() as any).parentElement;
+      
+      const fullWidth = parent.clientWidth;
+      const fullHeight = parent.clientHeight;
 
       const width = bounds.width;
       const height = bounds.height;
 
+      const midX = bounds.x + width/2;
+      const midY = bounds.y + height/2;
+
       if (width == 0 || height == 0) return; // nothing to fit
 
-      const scale = 1 / Math.max(width / fullWidth, height / fullHeight);
+      const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
+      const translate = [fullWidth/2 - scale*midX, fullHeight/2 - scale*midY];
 
-      this.svgContainer.select(`#matrix-container-${i}`).attr('transform', `translate(20, 50) scale(${scale}) `);
+      jpWrapper
+        .transition()
+        .duration(250)
+        .attr('transform', `translate(${translate})scale(${scale})`);
     }
   }
 
@@ -244,11 +264,22 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
 
+    d3.select('#svg-container-mjp')
+      .append('div')
+      .attr('id', 'tooltip') 
+      .style('display', 'none')
+      .style('position', 'absolute')
+      .style('z-index', '10')
+      .style('background', 'white')
+      .style('border', '1px solid black')
+      .style('padding', '5px');
+
     for (let i = 1; i <= this.cnt; i++) {
       (d3.select('#svg-container-mjp') as any)
         .append('svg')
         .attr('width', this.width / 4)
         .attr('height', this.height / 2)
+        .attr('viewBox', `0 0 ${this.width / 4} ${this.height / 2}`)
         .attr('id', `jp-${i}`)
         .call(this.zoom)
 
@@ -263,7 +294,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('fill', 'none')
         .attr('stroke', 'gray');
 
-      let g = this.svgContainer.append('g')
+      this.svgContainer.append('g')
         .attr('class', 'jp-wrapper')
         .attr('id', `jp-wrapper-${i}`);
     }
@@ -313,10 +344,12 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
   render(): void {
     d3.selectAll('.matrix-container').remove();
+    d3.selectAll('.time-label').remove();
 
     for (let i = 1; i <= this.cnt; i++) {
       const jpWrapper = d3.select(`#jp-wrapper-${i}`);
-      jpWrapper
+      
+      d3.select(`#jp-${i}`)
         .append('text')
         .text(`Time Step: ${i}`)
         .attr('class', 'time-label')
