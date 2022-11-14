@@ -16,7 +16,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
 
   private graph: Graph;
-  
+
   private svgContainer: d3.Selection<SVGElement, {}, HTMLElement, any>;
   private g: d3.Selection<SVGGElement, {}, HTMLElement, any>;
 
@@ -73,9 +73,34 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     if (this.graph) {
       this.setup();
       this.init();
-      this.zoomFit();
     }
+  }
 
+  mouseOver($event: MouseEvent): void {
+    console.log($event);
+
+    d3.select('#tooltip')
+      .style('left', $event.pageX + 10 + 'px')
+      .style('top', $event.pageY + 10 + 'px')
+      .style('display', 'inline-block')
+      .html('Node: ' + $event.target['__data__'].label);
+
+    d3.selectAll(`#node-${$event.target['__data__'].label}`)
+      .transition()
+      .duration(200)
+      .attr('fill', 'red')
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS * 2);
+  }
+
+  mouseOut($event: MouseEvent): void {
+    d3.select('#tooltip')
+      .style('display', 'none');
+
+    d3.selectAll('circle')
+      .transition()
+      .duration(200)
+      .attr('fill', 'darkgray')
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS);
   }
 
   zoomStart(): void {
@@ -83,8 +108,10 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   zooming($event: any): void {
-    this.g.selectAll('.group-container').each((d, i, nodes) => {
-      d3.select(nodes[i]).attr('transform', $event.transform).attr('transform-origin', '0 0');
+    d3.selectAll('.nodelink-container').each((d, i, nodes) => {
+      const node = d3.select(nodes[i])
+      node.attr('transform', `${$event.transform}`)
+        .attr('transform-origin', 'center');
     });
   }
 
@@ -106,7 +133,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     this.simulation
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
       .restart();
-      
+
     this.dragStartTime = Date.now();
 
     $event.subject.fx = $event.subject.x;
@@ -137,30 +164,40 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
 
-  
+
   zoomFit() {
-    const bounds = (this.svgContainer.node() as any).getBBox();
-    
-    const fullWidth = this.width;
-    const fullHeight = this.height;
-    
-    const width = bounds.width;
-    const height = bounds.height;
+    for (let i = 1; i <= this.cnt; i++) {
+      const jpWrapper = d3.select(`#jp-wrapper-${i}`);
 
-    const midX = bounds.x + width / 2;
-    const midY = bounds.y + height / 2;
-  
-    if (width == 0 || height == 0) return; // nothing to fit
+      const bounds = (jpWrapper.node() as any).getBBox();
 
-    const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
-    const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+      const parent = (jpWrapper.node() as any).parentElement;
 
-    this.g.attr('transform', `scale(${scale}) translate(50, 50)`);
-}
+      const fullWidth = parent.clientWidth;
+      const fullHeight = parent.clientHeight;
+
+      const width = bounds.width;
+      const height = bounds.height;
+
+      const midX = bounds.x + width / 2;
+      const midY = bounds.y + height / 2;
+
+      if (width == 0 || height == 0) return; // nothing to fit
+
+      const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
+      const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+      jpWrapper
+        .transition()
+        .duration(250)
+        .attr('transform', `translate(${translate})scale(${scale})`);
+    }
+  }
 
   setup(): void {
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 10])
+      .extent([[0, 0], [this.width, this.height]])
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
@@ -170,39 +207,38 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       .on('drag', this.dragging.bind(this))
       .on('end', this.dragEnd.bind(this));
 
-    this.svgContainer = (d3.select('#svg-container-nljp') as any)
-      .append('svg')
-      .attr('viewBox', [0, 0, this.width, this.height])
-      .attr('width', this.width)
-      .attr('height', this.height)
-      .call(this.zoom);
+    d3.select('#svg-container-nljp')
+      .append('div')
+      .attr('id', 'tooltip')
+      .style('display', 'none')
+      .style('position', 'absolute')
+      .style('z-index', '10')
+      .style('background', 'white')
+      .style('border', '1px solid black')
+      .style('padding', '5px');
 
-    this.g = this.svgContainer.append('g')
-    // .attr('transform', `translate(${-NODE_LINK_SIZE.WIDTH}, 0)`);
+    for (let i = 1; i <= this.cnt; i++) {
+      (d3.select('#svg-container-nljp') as any)
+        .append('svg')
+        // .attr('viewBox', [0, 0, this.width, this.height])
+        .attr('width', this.width / 4)
+        .attr('height', this.height / 2)
+        .attr('id', `jp-${i}`)
+        .call(this.zoom);
 
-    for(let i = 1; i <= this.cnt; i++) {
-      const g = this.g.append('g');
+      this.svgContainer = d3.select(`#jp-${i}`);
 
-      g.append('clipPath')
-      .attr('id', `clip-T${i}`)
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', NODE_LINK_SIZE.WIDTH)
-      .attr('height', NODE_LINK_SIZE.HEIGHT)
+      this.svgContainer.append('rect')
+      .attr('width', this.width / 4 - 5)
+      .attr('height', this.height / 2 - 5)
+      .attr('x', 5)
+      .attr('y', 5)
+      .attr('fill', 'none')
+      .attr('stroke', 'gray');
 
-      g
-      .attr('transform', () => {
-        if(i <= this.cols) {
-          return `translate(${(i - 1)*NODE_LINK_SIZE.WIDTH}, 0)`;
-        } else {
-          return `translate(${((i - 1) % this.cols)*NODE_LINK_SIZE.WIDTH}, ${NODE_LINK_SIZE.HEIGHT})`;
-        }
-      })
-      .attr('id', `T${i}`)
-      .attr('width', NODE_LINK_SIZE.WIDTH)
-      .attr('height', NODE_LINK_SIZE.HEIGHT)
-      ;
+      this.svgContainer.append('g')
+        .attr('class', 'jp-wrapper')
+        .attr('id', `jp-wrapper-${i}`);
     }
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
@@ -215,7 +251,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       .alphaMin(SIMULATION_CONFIGURATION.ALPHA_MIN)
       .alphaDecay(SIMULATION_CONFIGURATION.ALPHA_DECAY)
       .alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET);
-      
+
     this.simulation.on('tick', () => {
       this.render();
     });
@@ -225,34 +261,37 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   }
 
   init(): void {
-    for(let i = 1; i <= this.cnt; i++) {
-      this.g.select(`#T${i}`)
+    for (let i = 1; i <= this.cnt; i++) {
+      const jpWrapper = d3.select(`#jp-wrapper-${i}`);
+
+      d3.select(`#jp-${i}`)
         .append('text')
         .text(`Time Step: ${i}`)
-        .attr('x', 0)
-        .attr('y', 50)
+        .attr('class', 'time-label')
+        .attr('x', 10)
+        .attr('y', 25)
         .attr('font-size', 24)
         .attr('font-weight', 'bold');
 
-      const groupContainer = this.g.select(`#T${i}`)
-      .append('g')
-      .attr('class', 'group-container')
-      .attr('id', `group-container-${i}`)
+      const groupContainer = jpWrapper
+        .append('g')
+        .attr('class', 'nodelink-container')
+        .attr('id', `nodelink-container-${i}`)
 
       this.nodes = groupContainer.append('g').attr('class', 'nodes').selectAll('.node');
       this.links = groupContainer.append('g').attr('class', 'links').selectAll('.link');
 
       // UPDATE
       this.nodes = this.nodes.data(this.graph.nodes);
-  
+
       // ENTER
       this.nodes = this.nodes
         .enter()
         .append('g')
         .attr('class', 'node')
-        .style('cursor',  'pointer')
+        .style('cursor', 'pointer')
         .call(this.drag);
-  
+
       this.nodes
         .append('circle')
         .attr('stroke', '#fff')
@@ -260,54 +299,56 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
         .attr('cx', (d: Node) => { return d.x; })
         .attr('cy', (d: Node) => { return d.y; })
+        .attr('id', (d: Node) => { return `node-${d.label}`; })
         .attr('fill', 'darkgray')
-        .attr('clip-path', `url(#clip-T${i})`);
-  
+        .on('mouseover', this.mouseOver.bind(this))
+        .on('mouseout', this.mouseOut.bind(this));
+
       this.nodes.append('text')
         .text((d: Node) => { return d.label; })
         .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
         .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
-        .attr('paint-order', 'stroke')
-        .attr('clip-path', `url(#clip-T${i})`);
-  
+        .attr('paint-order', 'stroke');
+
       // JOIN
       this.nodes = this.nodes
         .merge(this.nodes);
-  
+
       // EXIT
       this.nodes.exit().remove();
-  
+
       // UPDATE
       this.links = this.links.data(this.graph.links);
-  
+
       // ENTER
       this.links = this.links
         .enter()
         .append('line')
         .attr('class', 'link')
         .attr('stroke', 'darkgray')
-        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i-1]; })
-        .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH)
-        .attr('clip-path', `url(#clip-T${i})`);
-  
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })
+        .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH);
+
       // JOIN
       this.links = this.links
         .merge(this.links);
-  
+
       // EXIT
       this.links.exit().remove();
     }
   }
 
   render(): void {
-    for(let i = 1; i <= this.cnt; i++) {
-      this.nodes = this.g.select(`#T${i}`).selectAll('.node');
-      this.links = this.g.select(`#T${i}`).selectAll('.link');
+    for (let i = 1; i <= this.cnt; i++) {
+      const jpContainer = d3.select(`#nodelink-container-${i}`);
+
+      this.nodes = jpContainer.selectAll('.node');
+      this.links = jpContainer.selectAll('.link');
 
       this.links
-        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i-1]; })
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })
         .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
         .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
         .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
@@ -321,6 +362,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
         .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
     }
+
+    this.zoomFit();
   }
 }
 
