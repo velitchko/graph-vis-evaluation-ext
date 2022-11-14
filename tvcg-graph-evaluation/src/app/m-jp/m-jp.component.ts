@@ -119,7 +119,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
       const node = d3.select(nodes[i])
       node.attr('transform', `${$event.transform}`)
-        .attr('transform-origin', 'center')
+        .attr('transform-origin', 'center');
     });
   }
 
@@ -137,7 +137,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
 
-  mouseOver($event: Event): void {
+  mouseOver($event: MouseEvent): void {
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
@@ -162,8 +162,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
     
     // tooltip
     d3.select('#tooltip')
-      .style('left', `${($event as any).pageX + 10}px`)
-      .style('top', `${($event as any).pageY + 10}px`)
+      .style('left', `${$event.pageX + 10}px`)
+      .style('top', `${$event.pageY + 10}px`)
       .style('display', 'inline-block')
       .html(`Source: ${source}<br/>Target: ${target}`);
 
@@ -226,7 +226,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
   }
 
   zoomFit() {
-    // FIXME: Fix zoom fit - still not working properly
     for (let i = 1; i <= this.cnt; i++) {
       const jpWrapper = d3.select(`#jp-wrapper-${i}`);
       
@@ -279,7 +278,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .append('svg')
         .attr('width', this.width / 4)
         .attr('height', this.height / 2)
-        .attr('viewBox', `0 0 ${this.width / 4} ${this.height / 2}`)
+        // .attr('viewBox', [0, 0, this.width, this.height])
         .attr('id', `jp-${i}`)
         .call(this.zoom)
 
