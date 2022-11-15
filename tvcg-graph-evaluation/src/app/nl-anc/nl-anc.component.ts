@@ -302,9 +302,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     this.nodes
       .selectAll('circle')
       .transition()
-      .attr('fill-opacity', (d: Node) => {
-        return d.time[timestep-1];
-      })
+      .attr('fill-opacity', (d: Node) => { return d.time[timestep - 1] ? 1 : 0.2 })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
       // .attr('opacity', (d: any) => {
@@ -315,9 +313,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     this.nodes
       .selectAll('text')
       .transition()
-      .attr('opacity', (d: Node) => {
-        return d.time[timestep-1];
-      })
+      .attr('opacity', (d: Node) => { return d.time[timestep - 1] ? 1 : 0.2 })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
       // .attr('opacity', (d: any) => {
