@@ -429,7 +429,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
         })
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'end')
-        .attr('font-size', 4);
+        .attr('font-size', 4)
+        .attr('opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2; });
 
       // COLUMNS
       groupContainer
@@ -448,6 +449,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .text((d: Node) => { return d.label; })
         .attr('text-anchor', 'start')
         .attr('font-size', 4)
+        .attr('opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2; });
 
       this.zoomFit();
     }
