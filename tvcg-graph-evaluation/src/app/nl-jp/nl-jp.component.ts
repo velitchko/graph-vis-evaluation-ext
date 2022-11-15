@@ -356,7 +356,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
 
       this.nodes.selectAll('circle')
         .attr('cx', (d: Node) => { return d.x; })
-        .attr('cy', (d: Node) => { return d.y; });
+        .attr('cy', (d: Node) => { return d.y; })
+        .attr('fill-opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2 });
 
       this.nodes.selectAll('text')
         .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
