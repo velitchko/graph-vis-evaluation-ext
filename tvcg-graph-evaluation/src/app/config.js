@@ -2,7 +2,7 @@ export const WIDTH = 960;
 export const HEIGHT = 960;
 export const NUMBER_OF_TIME_SLICES = 8;
 
-export const NODE_SIZE = 8;
+export const NODE_SIZE = 14;
 export const LINK_LENGTH = 80;
 
 export const TRANSITION_DURATION = 750;
