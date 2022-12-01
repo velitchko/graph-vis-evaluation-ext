@@ -282,7 +282,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('id', `jp-${i}`)
         .call(this.zoom)
 
-
       this.svgContainer = d3.select(`#jp-${i}`);
 
       this.svgContainer.append('rect')
@@ -409,7 +408,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('stroke-opacity', .25)
         .merge(cells)
         .on('mouseover', this.mouseOver.bind(this))
-        .on('mouseout', this.mouseOut.bind(this));;
+        .on('mouseout', this.mouseOut.bind(this));
 
       // EXIT
       cells.selectAll('.cell').remove();

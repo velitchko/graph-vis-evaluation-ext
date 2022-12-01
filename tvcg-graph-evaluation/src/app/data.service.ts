@@ -44,7 +44,6 @@ export class DataService {
   // test - example
   private graph_example = {};
 
-
   constructor() { 
     this.graph_infovis = INFOVIS;
     // test - example
