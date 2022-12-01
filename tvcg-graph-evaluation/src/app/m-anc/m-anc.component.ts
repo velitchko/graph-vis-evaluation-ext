@@ -242,7 +242,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
     d3.select(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', 'red');
 
-      console.log(($event.currentTarget as any).id);
     let source = ($event.currentTarget as any).id.split('-')[1];
     let target = ($event.currentTarget as any).id.split('-')[2];
 

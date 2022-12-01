@@ -67,7 +67,6 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
-        console.log(this.graph)
         this.numTimeSlices = this.graph.nodes[0].time.length;
         //this.cnt = this.numTimeSlices > NUMBER_OF_TIME_SLICES ? this.numTimeSlices : NUMBER_OF_TIME_SLICES;
         this.cnt = 8;

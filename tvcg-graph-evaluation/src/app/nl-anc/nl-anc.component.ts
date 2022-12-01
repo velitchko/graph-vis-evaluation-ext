@@ -153,8 +153,6 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: MouseEvent): void {
-    console.log($event);
-
     d3.select('#tooltip')
       .style('left', $event.pageX + 10 + 'px')
       .style('top', $event.pageY + 10 + 'px')
