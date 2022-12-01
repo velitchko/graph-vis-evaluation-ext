@@ -152,6 +152,33 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
 
+  mouseOver($event: MouseEvent): void {
+    console.log($event);
+
+    d3.select('#tooltip')
+      .style('left', $event.pageX + 10 + 'px')
+      .style('top', $event.pageY + 10 + 'px')
+      .style('display', 'inline-block')
+      .html('Node: ' + $event.target['__data__'].label);
+
+    d3.select(`#node-${$event.target['__data__'].label}`)
+      .transition()
+      .duration(200)
+      .attr('fill', 'red')
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS * 2);
+  }
+
+  mouseOut($event: MouseEvent): void {
+    d3.select('#tooltip')
+      .style('display', 'none');
+
+    d3.selectAll('circle')
+      .transition()
+      .duration(200)
+      .attr('fill', 'darkgray')
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS);
+  }
+
   zoomStart(): void {
     this.zoomStartTime = Date.now();
   }
@@ -241,6 +268,16 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
 
+    d3.select('#svg-container-nlanc')
+      .append('div')
+      .attr('id', 'tooltip')
+      .style('display', 'none')
+      .style('position', 'absolute')
+      .style('z-index', '10')
+      .style('background', 'white')
+      .style('border', '1px solid black')
+      .style('padding', '5px');
+      
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
       .on('drag', this.dragging.bind(this))
@@ -253,6 +290,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('height', this.height)
       .call(this.zoom);
 
+
     this.g = this.svgContainer.append('g');
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
@@ -264,7 +302,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
       .alphaMin(SIMULATION_CONFIGURATION.ALPHA_MIN)
       .alphaDecay(SIMULATION_CONFIGURATION.ALPHA_DECAY)
-      .alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET);
+      .alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET);  
 
     this.simulation.on('tick', () => {
       this.render();
@@ -273,8 +311,8 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     // Compute Simulation Based on SUPERGRAPH 💪
     this.simulation.restart();
 
-    this.nodes = this.g.append('g').attr('class', 'nodes').selectAll('.node');
     this.links = this.g.append('g').attr('class', 'links').selectAll('.link');
+    this.nodes = this.g.append('g').attr('class', 'nodes').selectAll('.node');
   }
 
   update($event: number): void {
@@ -333,6 +371,27 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   init(): void {
+    
+    // UPDATE
+    this.links = this.links.data(this.graph.links);
+
+    // ENTER
+    this.links = this.links
+      .enter()
+      .append('line')
+      .attr('class', 'link')
+      .attr('stroke', 'darkgray')
+      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[0]; })
+      .attr('stroke-width', 1);
+
+    // JOIN
+    this.links = this.links
+      .merge(this.links);
+
+    // EXIT
+    this.links.exit().remove();
+
+
     // UPDATE
     this.nodes = this.nodes.data(this.graph.nodes);
 
@@ -352,7 +411,10 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray')
-      .attr('fill-opacity', (d: Node) => { return d.time[0]; });
+      .attr('id', (d: Node) => { return `node-${d.label}`; })
+      .attr('fill-opacity', (d: Node) => { return d.time[0]; })
+      .on('mouseover', this.mouseOver.bind(this))
+      .on('mouseout', this.mouseOut.bind(this));
 
     this.nodes.append('text')
       .text((d: Node) => { return d.label; })
@@ -361,7 +423,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('stroke', 'white')
       .attr('stroke-width', 2)
       .attr('paint-order', 'stroke')
-      .attr('opacity', (d: Node) => { return d.time[0]; });
+      .attr('opacity', (d: Node) => { return d.time[0]; })
 
     // JOIN
     this.nodes = this.nodes
@@ -370,24 +432,6 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     // EXIT
     this.nodes.exit().remove();
 
-    // UPDATE
-    this.links = this.links.data(this.graph.links);
-
-    // ENTER
-    this.links = this.links
-      .enter()
-      .append('line')
-      .attr('class', 'link')
-      .attr('stroke', 'darkgray')
-      .attr('stroke-opacity', (d: Link<Node>) => { return d.time[0]; })
-      .attr('stroke-width', 1);
-
-    // JOIN
-    this.links = this.links
-      .merge(this.links);
-
-    // EXIT
-    this.links.exit().remove();
   }
 
   render(): void {

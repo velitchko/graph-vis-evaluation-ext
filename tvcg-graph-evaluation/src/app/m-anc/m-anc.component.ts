@@ -208,6 +208,8 @@ export class MAncComponent implements OnInit, AfterViewInit {
     this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
 
+  
+
   zoomStart(): void {
     this.zoomStartTime = Date.now();
   }
@@ -230,7 +232,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
 
-  mouseOver($event: Event): void {
+  mouseOver($event: MouseEvent): void {
     $event.preventDefault();
 
     this.highlightStartTime = Date.now();
@@ -240,8 +242,16 @@ export class MAncComponent implements OnInit, AfterViewInit {
     d3.select(`#${($event.currentTarget as SVGElement).getAttribute('id')}`)
       .attr('fill', 'red');
 
-    let source = ($event.currentTarget as any).id.split('-')[0];
-    let target = ($event.currentTarget as any).id.split('-')[1];
+      console.log(($event.currentTarget as any).id);
+    let source = ($event.currentTarget as any).id.split('-')[1];
+    let target = ($event.currentTarget as any).id.split('-')[2];
+
+    // tooltip
+    d3.select('#tooltip')
+      .style('left', `${$event.pageX + 10}px`)
+      .style('top', `${$event.pageY + 10}px`)
+      .style('display', 'inline-block')
+      .html(`Source: ${source}<br/>Target: ${target}`);
 
     // row highlight
     d3.selectAll('.rows')
@@ -270,6 +280,9 @@ export class MAncComponent implements OnInit, AfterViewInit {
     $event.preventDefault();
 
     this.highlightEndTime = Date.now();
+
+    d3.select('#tooltip')
+      .style('display', 'none');
 
     d3.selectAll('.cell')
       .attr('fill', 'darkgray');
@@ -323,6 +336,16 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
+  
+    d3.select('#svg-container-manc')
+        .append('div')
+        .attr('id', 'tooltip') 
+        .style('display', 'none')
+        .style('position', 'absolute')
+        .style('z-index', '10')
+        .style('background', 'white')
+        .style('border', '1px solid black')
+        .style('padding', '5px');
 
     this.svgContainer = (d3.select('#svg-container-manc') as any)
       .append('svg')
