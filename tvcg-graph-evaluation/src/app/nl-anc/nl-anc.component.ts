@@ -153,13 +153,16 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   mouseOver($event: MouseEvent): void {
+    let target = ($event.currentTarget as any).getAttribute('id');
+    let label = ($event.currentTarget as any).getAttribute('label');
+    console.log(target);
     d3.select('#tooltip')
       .style('left', $event.pageX + 10 + 'px')
       .style('top', $event.pageY + 10 + 'px')
       .style('display', 'inline-block')
-      .html('Node: ' + $event.target['__data__'].label);
+      .html(`Node: ${label}`);
 
-    d3.select(`#node-${$event.target['__data__'].label}`)
+    d3.select(`#${target}`)
       .transition()
       .duration(200)
       .attr('fill', 'red')
@@ -409,7 +412,8 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; })
       .attr('fill', 'darkgray')
-      .attr('id', (d: Node) => { return `node-${d.label}`; })
+      .attr('id', (d: Node) => { return `node-${d.label.replace(/[^a-zA-Z0-9\- ]/g, '')}`; })
+      .attr('label', (d: Node) => { return d.label; })
       .attr('fill-opacity', (d: Node) => { return d.time[0]; })
       .on('mouseover', this.mouseOver.bind(this))
       .on('mouseout', this.mouseOut.bind(this));
@@ -441,10 +445,13 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
 
     this.nodes.selectAll('circle')
+      .attr('fill-opacity', (d: Node) => { return d.time[0] ? 1 : 0.2 })
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; });
 
     this.nodes.selectAll('text')
+      .attr('opacity', (d: Node) => { return d.time[0] ? 1 : 0.2; })
+      .style('pointer-events', 'none')
       .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
       .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
       

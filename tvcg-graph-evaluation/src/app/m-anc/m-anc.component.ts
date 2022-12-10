@@ -245,12 +245,15 @@ export class MAncComponent implements OnInit, AfterViewInit {
     let source = ($event.currentTarget as any).id.split('-')[1];
     let target = ($event.currentTarget as any).id.split('-')[2];
 
+    let labelFrom = ($event.currentTarget as SVGElement).getAttribute('label').split('-')[0];
+    let labelTo = ($event.currentTarget as SVGElement).getAttribute('label').split('-')[1];
+
     // tooltip
     d3.select('#tooltip')
       .style('left', `${$event.pageX + 10}px`)
       .style('top', `${$event.pageY + 10}px`)
       .style('display', 'inline-block')
-      .html(`Source: ${source}<br/>Target: ${target}`);
+      .html(`Source: ${labelFrom}<br/>Target: ${labelTo}`);
 
     // row highlight
     d3.selectAll('.rows')
@@ -486,7 +489,8 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('height', DISPLAY_CONFIGURATION.CELL_SIZE)
       .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
-      .attr('id', (d: Cell) => { return `cell-${d.id}`; })
+      .attr('id', (d: Cell) => { return `cell-${d.id.replace(/[^a-zA-Z0-9\- ]/g, '')}`; })
+      .attr('label', (d: Cell) => { return d.id; })
       .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
       .attr('fill-opacity', (d: Cell) => {
         return d.link ? d.time[0] : 0;

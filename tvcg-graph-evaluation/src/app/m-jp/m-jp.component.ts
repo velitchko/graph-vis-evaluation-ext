@@ -149,6 +149,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
     let source = ($event.currentTarget as any).id.replace('cell-', '').split('-')[0];
     let target = ($event.currentTarget as any).id.replace('cell-', '').split('-')[1];
     
+    let labelFrom = ($event.currentTarget as SVGElement).getAttribute('label').split('-')[0];
+    let labelTo = ($event.currentTarget as SVGElement).getAttribute('label').split('-')[1];
+
     // row highlight
     d3.selectAll('.rows')
       .select(`#cell-${source}`)
@@ -164,7 +167,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .style('left', `${$event.pageX + 10}px`)
       .style('top', `${$event.pageY + 10}px`)
       .style('display', 'inline-block')
-      .html(`Source: ${source}<br/>Target: ${target}`);
+      .html(`Source: ${labelFrom}<br/>Target: ${labelTo}`);
 
     for (let i = 1; i <= this.cnt; i++) {
       d3 
@@ -398,7 +401,8 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('height', (DISPLAY_CONFIGURATION.CELL_SIZE / 4))
         .attr('x', (d: Cell) => { return d.x * (DISPLAY_CONFIGURATION.CELL_SIZE / 4); })
         .attr('y', (d: Cell) => { return d.y * (DISPLAY_CONFIGURATION.CELL_SIZE / 4); })
-        .attr('id', (d: Cell) => { return `cell-${d.id}`; })
+        .attr('id', (d: Cell) => { return `cell-${d.id.replace(/[^a-zA-Z0-9\- ]/g, '')}`; })
+        .attr('label', (d: Cell) => { return d.id; })
         .attr('link', (d: Cell) => { return d.link ? 1 : 0; })
         .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[i - 1] : 0; })
         .attr('fill', (d: Cell) => { return 'darkgray'; })
