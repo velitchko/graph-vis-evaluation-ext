@@ -241,22 +241,22 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   
   zoomFit() {
     const bounds = (this.svgContainer.node() as any).getBBox();
-    
+
     const fullWidth = this.width;
     const fullHeight = this.height;
-    
+
     const width = bounds.width;
     const height = bounds.height;
 
     const midX = bounds.x + width / 2;
     const midY = bounds.y + height / 2;
-  
+
     if (width == 0 || height == 0) return; // nothing to fit
 
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
-    this.g.attr('transform', `scale(${scale}) translate(${translate[0] - 100}, 50)`);
+    this.g.attr('transform', `scale(${scale}) translate(50, 50)`);
 }
 
   setup(): void {
@@ -430,6 +430,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     // EXIT
     this.nodes.exit().remove();
 
+    // this.zoomFit();
   }
 
   render(): void {
@@ -446,6 +447,8 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     this.nodes.selectAll('text')
       .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
       .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
+      
   }
+  
 }
 
