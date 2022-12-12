@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "graph-evaluation-two": {
+    "tvcg-graph-evaluation": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/graph-evaluation-two",
+            "outputPath": "dist/tvcg-graph-evaluation",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -68,18 +68,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "graph-evaluation-two:build"
+            "browserTarget": "tvcg-graph-evaluation:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "graph-evaluation-two:build:production"
+              "browserTarget": "tvcg-graph-evaluation:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "graph-evaluation-two:build"
+            "browserTarget": "tvcg-graph-evaluation:build"
           }
         },
         "test": {
@@ -117,15 +117,15 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "graph-evaluation-two:serve"
+            "devServerTarget": "tvcg-graph-evaluation:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "graph-evaluation-two:serve:production"
+              "devServerTarget": "tvcg-graph-evaluation:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "graph-evaluation-two"
+  "defaultProject": "tvcg-graph-evaluation"
 }
