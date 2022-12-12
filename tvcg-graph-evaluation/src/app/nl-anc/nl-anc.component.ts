@@ -423,9 +423,10 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
       .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
       .attr('stroke', 'white')
-      .attr('stroke-width', 2)
+      .attr('stroke-width', 1)
       .attr('paint-order', 'stroke')
-      .attr('opacity', (d: Node) => { return d.time[0]; })
+      .attr('opacity', (d: Node) => { return d.time[0]; })      
+      .attr('font-size', '4pt')
 
     // JOIN
     this.nodes = this.nodes
