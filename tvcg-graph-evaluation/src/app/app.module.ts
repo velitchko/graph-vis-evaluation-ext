@@ -10,6 +10,7 @@ import { NlJpComponent } from './nl-jp/nl-jp.component';
 import { NlAncComponent } from './nl-anc/nl-anc.component';
 import { MJpComponent } from './m-jp/m-jp.component';
 import { MAncComponent } from './m-anc/m-anc.component';
+import { HomeComponent } from './home/home.component';
 
 import { DataService } from './data.service';
 import { ReorderService } from './reorder.service';
@@ -27,7 +28,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     NlAncComponent,
     MJpComponent,
     MAncComponent,
-    LoadComponent
+    LoadComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
