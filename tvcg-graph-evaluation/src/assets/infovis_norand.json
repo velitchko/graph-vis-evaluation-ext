@@ -144,7 +144,7 @@
 			]
 		},
 		{
-			"source": "Abdul-Rahman,_A.",
+			"source": "AbdulRahman,_A.",
 			"target": "Reppa,_I.",
 			"time": [
 				0,
@@ -243,7 +243,7 @@
 		},
 		{
 			"source": "Hamann,_B.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -509,7 +509,7 @@
 		},
 		{
 			"source": "Gotz,_D.",
-			"target": "Lin,_Y.-R.",
+			"target": "Lin,_Y.R.",
 			"time": [
 				0,
 				1,
@@ -537,7 +537,7 @@
 		},
 		{
 			"source": "Gamblin,_T.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -635,7 +635,7 @@
 		},
 		{
 			"source": "Liu,_S.",
-			"target": "Lin,_Y.-R.",
+			"target": "Lin,_Y.R.",
 			"time": [
 				0,
 				1,
@@ -677,7 +677,7 @@
 		},
 		{
 			"source": "Mohamed,_F.",
-			"target": "Abdul-Rahman,_A.",
+			"target": "AbdulRahman,_A.",
 			"time": [
 				0,
 				0,
@@ -747,7 +747,7 @@
 		},
 		{
 			"source": "Cao,_N.",
-			"target": "Lin,_Y.-R.",
+			"target": "Lin,_Y.R.",
 			"time": [
 				0,
 				1,
@@ -1643,7 +1643,7 @@
 		},
 		{
 			"source": "Piringer,_H.",
-			"target": "Torsney-Weir,_T.",
+			"target": "TorsneyWeir,_T.",
 			"time": [
 				0,
 				0,
@@ -1754,7 +1754,7 @@
 			]
 		},
 		{
-			"source": "Torsney-Weir,_T.",
+			"source": "TorsneyWeir,_T.",
 			"target": "Pajer,_S.",
 			"time": [
 				0,
@@ -2230,7 +2230,7 @@
 			]
 		},
 		{
-			"source": "Bremer,_P.-T.",
+			"source": "Bremer,_P.T.",
 			"target": "Schulz,_M.",
 			"time": [
 				0,
@@ -2329,7 +2329,7 @@
 		},
 		{
 			"source": "Borgo,_R.",
-			"target": "Abdul-Rahman,_A.",
+			"target": "AbdulRahman,_A.",
 			"time": [
 				0,
 				0,
@@ -2468,7 +2468,7 @@
 			]
 		},
 		{
-			"source": "Bremer,_P.-T.",
+			"source": "Bremer,_P.T.",
 			"target": "Landge,_A.G.",
 			"time": [
 				0,
@@ -3099,7 +3099,7 @@
 		},
 		{
 			"source": "Pascucci,_V.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -3112,7 +3112,7 @@
 			]
 		},
 		{
-			"source": "Lin,_Y.-R.",
+			"source": "Lin,_Y.R.",
 			"target": "Qu,_H.",
 			"time": [
 				0,
@@ -3519,7 +3519,7 @@
 		},
 		{
 			"source": "Isaacs,_K.E.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -3589,7 +3589,7 @@
 		},
 		{
 			"source": "Langer,_S.H.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -3799,7 +3799,7 @@
 		},
 		{
 			"source": "Floridi,_L.",
-			"target": "Abdul-Rahman,_A.",
+			"target": "AbdulRahman,_A.",
 			"time": [
 				0,
 				0,
@@ -4261,7 +4261,7 @@
 		},
 		{
 			"source": "Jusufi,_I.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -4386,7 +4386,7 @@
 			]
 		},
 		{
-			"source": "Torsney-Weir,_T.",
+			"source": "TorsneyWeir,_T.",
 			"target": "Spechtenhauser,_F.",
 			"time": [
 				0,
@@ -4415,7 +4415,7 @@
 		},
 		{
 			"source": "Levine,_J.A.",
-			"target": "Bremer,_P.-T.",
+			"target": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -4442,7 +4442,7 @@
 			]
 		},
 		{
-			"source": "Abdul-Rahman,_A.",
+			"source": "AbdulRahman,_A.",
 			"target": "Grant,_P.W.",
 			"time": [
 				0,
@@ -5003,7 +5003,7 @@
 		},
 		{
 			"source": "Sun,_J.",
-			"target": "Lin,_Y.-R.",
+			"target": "Lin,_Y.R.",
 			"time": [
 				0,
 				1,
@@ -5115,7 +5115,7 @@
 		},
 		{
 			"source": "Möller,_T.",
-			"target": "Torsney-Weir,_T.",
+			"target": "TorsneyWeir,_T.",
 			"time": [
 				0,
 				0,
@@ -5422,7 +5422,7 @@
 			]
 		},
 		{
-			"source": "Bremer,_P.-T.",
+			"source": "Bremer,_P.T.",
 			"target": "Bhatele,_A.",
 			"time": [
 				0,
@@ -5450,7 +5450,7 @@
 			]
 		},
 		{
-			"source": "Abdul-Rahman,_A.",
+			"source": "AbdulRahman,_A.",
 			"target": "Chen,_M.",
 			"time": [
 				0,
@@ -5464,7 +5464,7 @@
 			]
 		},
 		{
-			"source": "Torsney-Weir,_T.",
+			"source": "TorsneyWeir,_T.",
 			"target": "Streit,_M.",
 			"time": [
 				0,
@@ -5760,8 +5760,8 @@
 			]
 		},
 		{
-			"label": "Abdul-Rahman,_A.",
-			"id": "Abdul-Rahman,_A.",
+			"label": "AbdulRahman,_A.",
+			"id": "AbdulRahman,_A.",
 			"time": [
 				0,
 				0,
@@ -5872,8 +5872,8 @@
 			]
 		},
 		{
-			"label": "Bremer,_P.-T.",
-			"id": "Bremer,_P.-T.",
+			"label": "Bremer,_P.T.",
+			"id": "Bremer,_P.T.",
 			"time": [
 				0,
 				0,
@@ -6068,8 +6068,8 @@
 			]
 		},
 		{
-			"label": "Lin,_Y.-R.",
-			"id": "Lin,_Y.-R.",
+			"label": "Lin,_Y.R.",
+			"id": "Lin,_Y.R.",
 			"time": [
 				0,
 				1,
@@ -6278,8 +6278,8 @@
 			]
 		},
 		{
-			"label": "Torsney-Weir,_T.",
-			"id": "Torsney-Weir,_T.",
+			"label": "TorsneyWeir,_T.",
+			"id": "TorsneyWeir,_T.",
 			"time": [
 				0,
 				0,
