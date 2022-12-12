@@ -14,7 +14,8 @@ const routes: Routes = [
   { path: 'm-jp', component: MJpComponent },
   { path: 'm-anc', component: MAncComponent },
   { path: 'load', component: LoadComponent },
-  { path: '*', component: HomeComponent },
+  { path: 'home', component: HomeComponent },
+  { path: '**', redirectTo: '/home', pathMatch: 'full' },
 ];
 
 @NgModule({
