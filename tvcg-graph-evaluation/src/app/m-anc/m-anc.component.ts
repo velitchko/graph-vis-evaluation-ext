@@ -7,6 +7,7 @@ import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
 import { ReorderService } from '../reorder.service';
+import { isFunction } from 'lodash';
 @Component({
   selector: 'app-m-anc',
   templateUrl: './m-anc.component.html',
@@ -15,6 +16,7 @@ import { ReorderService } from '../reorder.service';
 export class MAncComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
   private graph: Graph;
+  private copyGraph: Graph;
 
   private matrix: Array<Cell>;
 
@@ -81,6 +83,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .subscribe(params => {
         const graph = params['graph'];
         this.graph = this.ds.getGraph(graph);
+        this.copyGraph = { ... this.graph };
 
         // update slider time steps
         const newOptions: Options = Object.assign({}, this.options);
@@ -108,22 +111,105 @@ export class MAncComponent implements OnInit, AfterViewInit {
 
       this.setup();
       this.init();
+      this.render();
     }
   }
 
   updateOrder(): void {
     const newOrder = this.ro.reorder(this.selectedAlgorithm);
-    this.updateMatrix(newOrder);
-  }
 
-  updateMatrix(newOrder: any): void {
-    this.graph.nodes.sort((a: Node, b: Node) => {
-      return newOrder.indexOf(+a.id) - newOrder.indexOf(+b.id);
+    // sort by selected ordering algorithm
+    const prop: string = this.ro.properties.get(this.selectedAlgorithm);
+
+    newOrder.sort((a: any, b: any) => {
+      return a[prop] - b[prop];
     });
 
-    this.matrix = new Array<Cell>();
+    this.updateMatrix(newOrder, prop);
+  }
 
-    this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
+  updateMatrix(newOrder: Array<any>, prop: string): void {
+    const nodesByProp = this.graph.nodes.map((n: Node) => n[prop]);
+
+    for (let i = 0; i < this.graph.nodes.length; i++) {
+      if (nodesByProp.indexOf(i) == -1) {
+        // find the undefined property
+        const missingNode = this.graph.nodes.find((n: Node) => n[prop] == undefined);
+
+        if (missingNode) {
+          // assign the missing property
+          missingNode[prop] = i;
+        } else {
+          // something is duplicated
+          let sortedNodes = this.graph.nodes.slice().sort((a: any, b: any) => {
+            return a[prop] - b[prop];
+          });
+
+          for (let k = 0; k < sortedNodes.length - 1; k++) {
+            if (sortedNodes[k][prop] === sortedNodes[k + 1][prop]) {
+              sortedNodes[k + 1][prop] = i;
+            }
+          }
+        }
+      }
+    }
+    this.matrix = new Array<Cell>();
+    let edgeHash = new Map<string, any>();
+    this.graph.links
+      .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
+      .forEach((link: Link<Node>) => {
+        // Undirected graph - duplicate link s-t && t-s
+        let idA: string, idB: string = '';
+        if (link.source === link.target) return;
+
+        idA = `${(link.source as Node).label}-${(link.target as Node).label}`;
+        idB = `${(link.target as Node).label}-${(link.source as Node).label}`;
+
+        edgeHash.set(idA, link);
+        edgeHash.set(idB, link);
+      });
+
+    if (this.selectedAlgorithm === 'none') {
+      // sort nodes alphabetically    
+      this.graph.nodes.sort((a: Node, b: Node) => {
+        return a.label.localeCompare(b.label);
+      });
+
+      this.graph.nodes.forEach((source: Node, sourceId: number) => {
+        this.graph.nodes.forEach((target: Node, targetId: number) => {
+          let cell = {
+            id: `${source.label}-${target.label}`,
+            x: targetId,
+            y: sourceId,
+            link: 0,
+            time: []
+          };
+          if (edgeHash.has(cell.id)) {
+            cell.link = 1;
+            cell.time = edgeHash.get(cell.id).time;
+          }
+          this.matrix.push(cell);
+        });
+      });
+
+    } else {
+      this.graph.nodes.forEach((source: Node) => {
+        this.graph.nodes.forEach((target: Node) => {
+          let cell = {
+            id: `${source.label}-${target.label}`,
+            x: source[prop],
+            y: target[prop],
+            link: 0,
+            time: []
+          };
+          if (edgeHash.has(cell.id)) {
+            cell.link = 1;
+            cell.time = edgeHash.get(cell.id).time;
+          }
+          this.matrix.push(cell);
+        });
+      });
+    }
 
     this.cells = this.cells.data(this.matrix);
 
@@ -143,7 +229,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('y', (d: Node) => { return newOrder.indexOf(d.id) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; })
+      .attr('y', (d: Node, i: number) => { return (isNaN(d[prop]) ? i : d[prop]) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; })
 
     // COLUMNS
     const cols = this.g.selectAll('.column-label');
@@ -152,7 +238,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
-      .attr('y', (d: Node) => { return newOrder.indexOf(d.id) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; });
+      .attr('y', (d: Node, i: number) => { return (isNaN(d[prop]) ? i : d[prop]) * DISPLAY_CONFIGURATION.CELL_SIZE + DISPLAY_CONFIGURATION.CELL_SIZE; });
   }
 
   restart(): void {
@@ -207,8 +293,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
   animate(): void {
     this.animationHandle = setInterval(this.update.bind(this), this.customAnimationSpeed);
   }
-
-  
 
   zoomStart(): void {
     this.zoomStartTime = Date.now();
@@ -338,16 +422,16 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .on('start', this.zoomStart.bind(this))
       .on('zoom', this.zooming.bind(this))
       .on('end', this.zoomEnd.bind(this));
-  
+
     d3.select('#svg-container-manc')
-        .append('div')
-        .attr('id', 'tooltip') 
-        .style('display', 'none')
-        .style('position', 'absolute')
-        .style('z-index', '10')
-        .style('background', 'white')
-        .style('border', '1px solid black')
-        .style('padding', '5px');
+      .append('div')
+      .attr('id', 'tooltip')
+      .style('display', 'none')
+      .style('position', 'absolute')
+      .style('z-index', '10')
+      .style('background', 'white')
+      .style('border', '1px solid black')
+      .style('padding', '5px');
 
     this.svgContainer = (d3.select('#svg-container-manc') as any)
       .append('svg')
@@ -383,7 +467,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     this.cells = this.g.append('g').attr('class', 'cells').selectAll('.cell');
   }
 
-  init(sortDefault: boolean = true): void {
+  init(): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
       .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
@@ -399,12 +483,10 @@ export class MAncComponent implements OnInit, AfterViewInit {
         edgeHash.set(idB, link);
       });
 
-    // sort nodes alphabetically
-    if (sortDefault) {
-      this.graph.nodes.sort((a: Node, b: Node) => {
-        return a.label.localeCompare(b.label);
-      });
-    }
+    // sort nodes alphabetically    
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return a.label.localeCompare(b.label);
+    });
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
@@ -422,10 +504,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
-
-    if (sortDefault) this.render();
   }
-
 
   update($event: number): void {
     if (!this.graph) return;
@@ -469,10 +548,10 @@ export class MAncComponent implements OnInit, AfterViewInit {
       });
   }
 
-  render(): void {
+  render(zoom: boolean = true): void {
     this.g.selectAll('.rows').remove();
     this.g.selectAll('.columns').remove();
-    // this.g.selectAll('.cell').remove();
+    this.g.selectAll('.cell').remove();
 
     // UPDATE
     this.cells = this.cells.data(this.matrix);
@@ -539,7 +618,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('text-anchor', 'start')
       .attr('font-size', FONT_SIZE);
 
-      this.g.selectAll('.row-label')
+    this.g.selectAll('.row-label')
       .attr('fill-opacity', (d: Node, i: number) => {
         return d.time[0] ? 1 : 0.2;
       });
@@ -548,6 +627,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('fill-opacity', (d: Node, i: number) => {
         return d.time[0] ? 1 : 0.2;
       });
-    this.zoomFit();
+
+    if (zoom) this.zoomFit();
   }
 }

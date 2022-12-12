@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { DataService, Graph } from '../data.service';
-import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, SVG_MARGIN, FONT_SIZE, JP_ROW_COUNT, JP_COL_COUNT } from '../config';
+import { DISPLAY_CONFIGURATION, MATRIX_SIZE, NUMBER_OF_TIME_SLICES, TRANSITION_DURATION, SVG_MARGIN, FONT_SIZE, JP_ROW_COUNT, JP_COL_COUNT } from '../config';
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link, Cell } from '../node-link';
 import { ActivatedRoute } from '@angular/router';
@@ -90,22 +90,139 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
       this.setup();
       this.init();
+      this.render();
     }
   }
 
   updateOrder(): void {
     const newOrder = this.ro.reorder(this.selectedAlgorithm);
-    this.updateMatrix(newOrder);
-  }
 
-  updateMatrix(newOrder: any): void {
-    this.graph.nodes.sort((a: Node, b: Node) => {
-      return newOrder.indexOf(+a.id) - newOrder.indexOf(+b.id);
+    // sort by selected ordering algorithm
+    const prop: string = this.ro.properties.get(this.selectedAlgorithm);
+
+    newOrder.sort((a: any, b: any) => {
+      return a[prop] - b[prop];
     });
 
-    this.matrix = new Array<Cell>();
+    this.updateMatrix(newOrder, prop);
+  }
 
-    this.selectedAlgorithm == 'none' ? this.init() : this.init(false);
+  updateMatrix(newOrder: Array<any>, prop: string): void {
+    const nodesByProp = this.graph.nodes.map((n: Node) => n[prop]);
+
+    for (let i = 0; i < this.graph.nodes.length; i++) {
+      if (nodesByProp.indexOf(i) == -1) {
+        // find the undefined property
+        const missingNode = this.graph.nodes.find((n: Node) => n[prop] == undefined);
+
+        if (missingNode) {
+          // assign the missing property
+          missingNode[prop] = i;
+        } else {
+          // something is duplicated
+          let sortedNodes = this.graph.nodes.slice().sort((a: any, b: any) => {
+            return a[prop] - b[prop];
+          });
+
+          for (let k = 0; k < sortedNodes.length - 1; k++) {
+            if (sortedNodes[k][prop] === sortedNodes[k + 1][prop]) {
+              sortedNodes[k + 1][prop] = i;
+            }
+          }
+        }
+      }
+    }
+    this.matrix = new Array<Cell>();
+    let edgeHash = new Map<string, any>();
+    this.graph.links
+      .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
+      .forEach((link: Link<Node>) => {
+        // Undirected graph - duplicate link s-t && t-s
+        let idA: string, idB: string = '';
+        if (link.source === link.target) return;
+
+        idA = `${(link.source as Node).label}-${(link.target as Node).label}`;
+        idB = `${(link.target as Node).label}-${(link.source as Node).label}`;
+
+        edgeHash.set(idA, link);
+        edgeHash.set(idB, link);
+      });
+
+    if (this.selectedAlgorithm === 'none') {
+      // sort nodes alphabetically    
+      this.graph.nodes.sort((a: Node, b: Node) => {
+        return a.label.localeCompare(b.label);
+      });
+
+      this.graph.nodes.forEach((source: Node, sourceId: number) => {
+        this.graph.nodes.forEach((target: Node, targetId: number) => {
+          let cell = {
+            id: `${source.label}-${target.label}`,
+            x: targetId,
+            y: sourceId,
+            link: 0,
+            time: []
+          };
+          if (edgeHash.has(cell.id)) {
+            cell.link = 1;
+            cell.time = edgeHash.get(cell.id).time;
+          }
+          this.matrix.push(cell);
+        });
+      });
+
+    } else {
+      this.graph.nodes.forEach((source: Node) => {
+        this.graph.nodes.forEach((target: Node) => {
+          let cell = {
+            id: `${source.label}-${target.label}`,
+            x: source[prop],
+            y: target[prop],
+            link: 0,
+            time: []
+          };
+          if (edgeHash.has(cell.id)) {
+            cell.link = 1;
+            cell.time = edgeHash.get(cell.id).time;
+          }
+          this.matrix.push(cell);
+        });
+      });
+    }
+
+    for(let i = 1; i <= this.cnt; i++) {
+      const container = d3.select(`#matrix-container-${i}`);
+    
+      let cells = container.selectAll('.cell');
+      cells = cells.data(this.matrix);
+
+      // CELLS
+      cells
+        .transition()
+        .duration(TRANSITION_DURATION)
+        .ease(d3.easeCubicOut)
+        .attr('x', (d: Cell) => { return d.x * (DISPLAY_CONFIGURATION.CELL_SIZE/4); })
+        .attr('y', (d: Cell) => { return d.y * (DISPLAY_CONFIGURATION.CELL_SIZE/4); })
+        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
+
+      // ROWS
+      const rows = container.selectAll('.row-label');
+
+      rows
+        .transition()
+        .duration(TRANSITION_DURATION)
+        .ease(d3.easeCubicOut)
+        .attr('y', (d: Node, i: number) => { return (isNaN(d[prop]) ? i : d[prop]) * (DISPLAY_CONFIGURATION.CELL_SIZE/4) + (DISPLAY_CONFIGURATION.CELL_SIZE/4); })
+
+      // COLUMNS
+      const cols = container.selectAll('.column-label');
+
+      cols
+        .transition()
+        .duration(TRANSITION_DURATION)
+        .ease(d3.easeCubicOut)
+        .attr('y', (d: Node, i: number) => { return (isNaN(d[prop]) ? i : d[prop]) * (DISPLAY_CONFIGURATION.CELL_SIZE/4) + (DISPLAY_CONFIGURATION.CELL_SIZE/4); });
+      }
   }
 
   zoomStart(): void {
@@ -300,7 +417,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     }
   }
 
-  init(sortDefault: boolean = true): void {
+  init(): void {
     let edgeHash = new Map<string, any>();
     this.graph.links
       .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
@@ -316,11 +433,10 @@ export class MJpComponent implements OnInit, AfterViewInit {
       });
 
     // sort nodes alphabetically
-    if (sortDefault) {
+    
       this.graph.nodes.sort((a: Node, b: Node) => {
         return a.label.localeCompare(b.label);
       });
-    }
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
@@ -338,11 +454,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
         this.matrix.push(cell);
       });
     });
-
-    this.render();
   }
 
-  render(): void {
+  render(zoom: boolean = true): void {
     d3.selectAll('.matrix-container').remove();
     d3.selectAll('.time-label').remove();
 
@@ -453,7 +567,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('font-size', 4)
         .attr('opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2; });
 
-      this.zoomFit();
-    }
+      }
+      if(zoom) this.zoomFit();
   }
 }
