@@ -220,7 +220,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .ease(d3.easeCubicOut)
       .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
-      .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
 
     // ROWS
     const rows = this.g.selectAll('.row-label');
