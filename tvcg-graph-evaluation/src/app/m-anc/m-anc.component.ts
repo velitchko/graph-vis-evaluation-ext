@@ -60,7 +60,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
     }
   };
 
-  constructor(private ds: DataService, private ro: ReorderService, private route: ActivatedRoute) {
+  constructor(private ds: DataService, public ro: ReorderService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
@@ -220,7 +220,6 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .ease(d3.easeCubicOut)
       .attr('x', (d: Cell) => { return d.x * DISPLAY_CONFIGURATION.CELL_SIZE; })
       .attr('y', (d: Cell) => { return d.y * DISPLAY_CONFIGURATION.CELL_SIZE; })
-      .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
 
     // ROWS
     const rows = this.g.selectAll('.row-label');

@@ -53,7 +53,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
     ceil: 4
   };
 
-  constructor(private ds: DataService, private ro: ReorderService, private route: ActivatedRoute) {
+  constructor(private ds: DataService, public ro: ReorderService, private route: ActivatedRoute) {
     this.matrix = new Array<Cell>();
     this.timers = new Array<{ type: string, time: number }>();
     this.interactions = {
