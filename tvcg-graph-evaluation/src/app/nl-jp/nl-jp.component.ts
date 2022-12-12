@@ -311,8 +311,9 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
         .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; })
         .attr('stroke', 'white')
-        .attr('stroke-width', 2)
-        .attr('paint-order', 'stroke');
+        .attr('stroke-width', 1)
+        .attr('paint-order', 'stroke')
+        .attr('font-size', '4pt');
 
       // JOIN
       this.nodes = this.nodes
