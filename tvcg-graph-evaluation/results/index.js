@@ -23,8 +23,6 @@ const {
     strict: true,
 });
 
-const techniqueMap = new Map();
-
 const answerMap = new Map();
 
 answerMap.set('Strongly Disagree', '1');
@@ -128,19 +126,13 @@ function main() {
             }
             converter.json2csv(parsed, (err, csv) => {
                 if (err) {
-                    throw err
+                    throw err;
                 }
-                // print CSV string
-                console.log(csv)
 
                 // write CSV to a file
                 fs.writeFileSync(`./csvs/${filename.split('.')[0]}-${type}-parsed.csv`, csv);
             });
         })
-    // .pipe(output)
-    // .on('finish', function () {
-    //     console.log('Done! 💪 Check the output file.');
-    // });
 }
 
 
