@@ -165,7 +165,6 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
 
-
   zoomFit() {
     for (let i = 1; i <= this.cnt; i++) {
       const jpWrapper = d3.select(`#jp-wrapper-${i}`);
@@ -230,12 +229,12 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.svgContainer = d3.select(`#jp-${i}`);
 
       this.svgContainer.append('rect')
-      .attr('width', this.width / 4 - 5)
-      .attr('height', this.height / 2 - 5)
-      .attr('x', 5)
-      .attr('y', 5)
-      .attr('fill', 'none')
-      .attr('stroke', 'gray');
+        .attr('width', this.width / 4 - 5)
+        .attr('height', this.height / 2 - 5)
+        .attr('x', 5)
+        .attr('y', 5)
+        .attr('fill', 'none')
+        .attr('stroke', 'gray');
 
       this.svgContainer.append('g')
         .attr('class', 'jp-wrapper')
@@ -243,7 +242,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     }
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
-      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(SIMULATION_CONFIGURATION.LINK_DISTANCE).strength(SIMULATION_CONFIGURATION.LINK_STRENGTH).id(d => d.id))
+      .force('link', d3.forceLink<Node, Link<Node>>(this.graph.links).distance(SIMULATION_CONFIGURATION.LINK_DISTANCE * 2).strength(SIMULATION_CONFIGURATION.LINK_STRENGTH).id(d => d.id))
       .force('collide', d3.forceCollide().strength(SIMULATION_CONFIGURATION.NODE_STRENGTH).radius(DISPLAY_CONFIGURATION.NODE_RADIUS * 2))
       .force('charge', d3.forceManyBody().strength(SIMULATION_CONFIGURATION.MANYBODY_STRENGTH))
       .force('center', d3.forceCenter(NODE_LINK_SIZE.WIDTH / 2, NODE_LINK_SIZE.HEIGHT / 2).strength(SIMULATION_CONFIGURATION.CENTER_STRENGTH))
@@ -255,6 +254,11 @@ export class NlJpComponent implements OnInit, AfterViewInit {
 
     this.simulation.on('tick', () => {
       this.render();
+    });
+
+    this.simulation.on('end', () => {
+      console.log('Simulation Ended');
+      this.zoomFit();
     });
 
     // Compute Simulation Based on SUPERGRAPH 💪
@@ -279,8 +283,27 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('class', 'nodelink-container')
         .attr('id', `nodelink-container-${i}`)
 
-      this.nodes = groupContainer.append('g').attr('class', 'nodes').selectAll('.node');
       this.links = groupContainer.append('g').attr('class', 'links').selectAll('.link');
+      this.nodes = groupContainer.append('g').attr('class', 'nodes').selectAll('.node');
+
+      // UPDATE
+      this.links = this.links.data(this.graph.links);
+
+      // ENTER
+      this.links = this.links
+        .enter()
+        .append('line')
+        .attr('class', 'link')
+        .attr('stroke', 'darkgray')
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })
+        .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH);
+
+      // JOIN
+      this.links = this.links
+        .merge(this.links);
+
+      // EXIT
+      this.links.exit().remove();
 
       // UPDATE
       this.nodes = this.nodes.data(this.graph.nodes);
@@ -321,25 +344,6 @@ export class NlJpComponent implements OnInit, AfterViewInit {
 
       // EXIT
       this.nodes.exit().remove();
-
-      // UPDATE
-      this.links = this.links.data(this.graph.links);
-
-      // ENTER
-      this.links = this.links
-        .enter()
-        .append('line')
-        .attr('class', 'link')
-        .attr('stroke', 'darkgray')
-        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })
-        .attr('stroke-width', DISPLAY_CONFIGURATION.LINK_WIDTH);
-
-      // JOIN
-      this.links = this.links
-        .merge(this.links);
-
-      // EXIT
-      this.links.exit().remove();
     }
   }
 
@@ -350,26 +354,24 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.nodes = jpContainer.selectAll('.node');
       this.links = jpContainer.selectAll('.link');
 
-      this.links
-        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })
-        .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
-        .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
-        .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
-        .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
+      this.nodes.selectAll('text')
+        .attr('opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2; })
+        .style('pointer-events', 'none')
+        .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+        .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
 
       this.nodes.selectAll('circle')
         .attr('cx', (d: Node) => { return d.x; })
         .attr('cy', (d: Node) => { return d.y; })
         .attr('fill-opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2 });
 
-      this.nodes.selectAll('text')
-        .attr('opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2; })
-        .style('pointer-events', 'none')
-        .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
-        .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
+      this.links
+        .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })
+        .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
+        .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
+        .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
+        .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
     }
-
-    this.zoomFit();
   }
 }
 

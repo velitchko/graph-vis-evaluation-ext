@@ -81,7 +81,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
 
         // update slider time steps
         const newOptions: Options = Object.assign({}, this.options);
-        
+
         newOptions.ticksArray = _.range(1, this.graph.nodes[0].time.length + 1);
         newOptions.ceil = this.graph.nodes[0].time.length;
 
@@ -98,7 +98,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       this.init();
     }
   }
-  
+
   restart(): void {
     this.pause();
     this.start();
@@ -203,7 +203,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if(!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
+    if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     this.simulation
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
@@ -216,14 +216,14 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if(!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
+    if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
   }
 
   dragEnd($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if(!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
+    if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     this.dragEndTime = Date.now();
 
@@ -241,7 +241,6 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
 
-  
   zoomFit() {
     const bounds = (this.svgContainer.node() as any).getBBox();
 
@@ -260,7 +259,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
     this.g.attr('transform', `scale(${scale}) translate(50, 50)`);
-}
+  }
 
   setup(): void {
     this.zoom = d3.zoom()
@@ -278,7 +277,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .style('background', 'white')
       .style('border', '1px solid black')
       .style('padding', '5px');
-      
+
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
       .on('drag', this.dragging.bind(this))
@@ -291,7 +290,6 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('height', this.height)
       .call(this.zoom);
 
-
     this.g = this.svgContainer.append('g');
 
     this.simulation = d3.forceSimulation<Node>(this.graph.nodes)
@@ -303,10 +301,15 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
       .alphaMin(SIMULATION_CONFIGURATION.ALPHA_MIN)
       .alphaDecay(SIMULATION_CONFIGURATION.ALPHA_DECAY)
-      .alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET);  
+      .alphaTarget(SIMULATION_CONFIGURATION.ALPHA_TARGET);
 
     this.simulation.on('tick', () => {
       this.render();
+    });
+
+    this.simulation.on('end', () => {
+      console.log('simulation ended');
+      this.zoomFit();
     });
 
     // Compute Simulation Based on SUPERGRAPH 💪
@@ -325,10 +328,10 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     });
 
     let timestep = undefined;
-    
-    if(!$event) {
-      this.value = (this.value === this.options.ceil) ? 1 : this.value+1;
-      timestep = this.value 
+
+    if (!$event) {
+      this.value = (this.value === this.options.ceil) ? 1 : this.value + 1;
+      timestep = this.value
     } else {
       timestep = $event;
     }
@@ -344,10 +347,10 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('fill-opacity', (d: Node) => { return d.time[timestep - 1] ? 1 : 0.2 })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
-      // .attr('opacity', (d: any) => {
-      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-      //   return d.time === $event ? 1 : 0;
-      // });
+    // .attr('opacity', (d: any) => {
+    //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+    //   return d.time === $event ? 1 : 0;
+    // });
 
     this.nodes
       .selectAll('text')
@@ -355,11 +358,11 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('opacity', (d: Node) => { return d.time[timestep - 1] ? 1 : 0.2 })
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut);
-      // .attr('opacity', (d: any) => {
-      //   console.log(d);
-      //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
-      //   return d.time === $event ? 1 : 0;
-      // });
+    // .attr('opacity', (d: any) => {
+    //   console.log(d);
+    //   if (d.time !== $event) nodesOutOfCurrentTime.add(d.label);
+    //   return d.time === $event ? 1 : 0;
+    // });
 
     this.links
       // .selectAll('link')
@@ -367,12 +370,12 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .duration(TRANSITION_DURATION)
       .ease(d3.easeCubicOut)
       .attr('stroke-opacity', (d: Link<Node>) => {
-        return d.time[timestep-1];
+        return d.time[timestep - 1];
       });
   }
 
   init(): void {
-    
+
     // UPDATE
     this.links = this.links.data(this.graph.links);
 
@@ -392,7 +395,6 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     // EXIT
     this.links.exit().remove();
 
-
     // UPDATE
     this.nodes = this.nodes.data(this.graph.nodes);
 
@@ -401,7 +403,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .enter()
       .append('g')
       .attr('class', 'node')
-      .style('cursor',  'pointer')
+      .style('cursor', 'pointer')
       .call(this.drag);
 
     this.nodes
@@ -425,7 +427,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .attr('stroke', 'white')
       .attr('stroke-width', 1)
       .attr('paint-order', 'stroke')
-      .attr('opacity', (d: Node) => { return d.time[0]; })      
+      .attr('opacity', (d: Node) => { return d.time[0]; })
       .attr('font-size', '4pt')
 
     // JOIN
@@ -439,24 +441,22 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   render(): void {
-    this.links
-      .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
-      .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
-      .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
-      .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
+    this.nodes.selectAll('text')
+      .attr('opacity', (d: Node) => { return d.time[0] ? 1 : 0.2; })
+      .style('pointer-events', 'none')
+      .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
+      .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
 
     this.nodes.selectAll('circle')
       .attr('fill-opacity', (d: Node) => { return d.time[0] ? 1 : 0.2 })
       .attr('cx', (d: Node) => { return d.x; })
       .attr('cy', (d: Node) => { return d.y; });
 
-    this.nodes.selectAll('text')
-      .attr('opacity', (d: Node) => { return d.time[0] ? 1 : 0.2; })
-      .style('pointer-events', 'none')
-      .attr('x', (d: Node) => { return d.x + DISPLAY_CONFIGURATION.NODE_RADIUS; })
-      .attr('y', (d: Node) => { return d.y + DISPLAY_CONFIGURATION.NODE_RADIUS; });
-      
+    this.links
+      .attr('x1', (d: Link<Node>) => { return (d.source as Node).x; })
+      .attr('y1', (d: Link<Node>) => { return (d.source as Node).y; })
+      .attr('x2', (d: Link<Node>) => { return (d.target as Node).x; })
+      .attr('y2', (d: Link<Node>) => { return (d.target as Node).y; });
   }
-  
 }
 
