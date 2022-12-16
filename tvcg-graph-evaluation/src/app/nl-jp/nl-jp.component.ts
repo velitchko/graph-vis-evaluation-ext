@@ -205,7 +205,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
       .on('drag', this.dragging.bind(this))
-      .on('end', this.dragEnd.bind(this));
+      // .on('end', this.dragEnd.bind(this));
 
     d3.select('#svg-container-nljp')
       .append('div')
@@ -256,10 +256,10 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.render();
     });
 
-    this.simulation.on('end', () => {
-      console.log('Simulation Ended');
-      this.zoomFit();
-    });
+    // this.simulation.on('end', () => {
+    //   console.log('Simulation Ended');
+    //   this.zoomFit();
+    // });
 
     // Compute Simulation Based on SUPERGRAPH 💪
     this.simulation.restart();

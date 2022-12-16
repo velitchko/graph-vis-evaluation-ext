@@ -7,6 +7,7 @@ import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
 import * as _ from 'lodash';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 @Component({
   selector: 'app-nl-anc',
   templateUrl: './nl-anc.component.html',
@@ -155,7 +156,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   mouseOver($event: MouseEvent): void {
     let target = ($event.currentTarget as any).getAttribute('id');
     let label = ($event.currentTarget as any).getAttribute('label');
-    console.log(target);
+    
     d3.select('#tooltip')
       .style('left', $event.pageX + 10 + 'px')
       .style('top', $event.pageY + 10 + 'px')
@@ -203,7 +204,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   dragStart($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
+    // if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
 
     this.simulation
       .alpha(SIMULATION_CONFIGURATION.ALPHA)
@@ -216,8 +217,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   }
 
   dragging($event: d3.D3DragEvent<SVGGElement, Node, any>): void {
-    if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
-
+    // if (!$event.subject.time[this.value]) return; // if node outside of time slice dont drag
     $event.subject.fx = $event.x;
     $event.subject.fy = $event.y;
   }
@@ -235,8 +235,8 @@ export class NlAncComponent implements OnInit, AfterViewInit {
 
     this.interactions.drags++;
 
-    $event.subject.fx = null;
-    $event.subject.fy = null;
+    // $event.subject.fx = null;
+    // $event.subject.fy = null;
 
     parent.postMessage({ interactions: this.interactions, timers: this.timers }, '*');
   }
@@ -281,7 +281,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
       .on('drag', this.dragging.bind(this))
-      .on('end', this.dragEnd.bind(this));
+      // .on('end', this.dragEnd.bind(this));
 
     this.svgContainer = (d3.select('#svg-container-nlanc') as any)
       .append('svg')
