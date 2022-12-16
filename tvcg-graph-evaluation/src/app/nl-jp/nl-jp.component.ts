@@ -28,6 +28,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   private zoom: d3.ZoomBehavior<any, {}>;
   private zoomStartTime: number;
   private zoomEndTime: number;
+  private fitted: boolean = false;
 
   private drag: d3.DragBehavior<any, {}, any>;
   private dragStartTime: number;
@@ -79,6 +80,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
   mouseOver($event: MouseEvent): void {
     let target = ($event.currentTarget as any).getAttribute('id');
     let label = ($event.currentTarget as any).getAttribute('label');
+    let exists = +($event.currentTarget as any).getAttribute('exists');
 
     d3.select('#tooltip')
       .style('left', $event.pageX + 10 + 'px')
@@ -91,6 +93,28 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       .duration(200)
       .attr('fill', 'red')
       .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS * 2);
+
+    // find selected node
+    let selectedNode = this.graph.nodes.find((node: Node) => {
+      return node.label === label;
+    });
+
+    // find adjacent nodes and highlight
+    let adjacentNodes = this.graph.links.filter((link: Link<Node>) => {
+      // console.log((link.source as Node).id, (link.target as Node).id)
+      return (link.source as Node).label === label || (link.target as Node).label === label;
+    });
+
+      // check if neighbor exists in time step
+      adjacentNodes.forEach((link: Link<Node>) => {
+        let node = (link.source as Node).label === label ? link.target : link.source;
+
+        d3.selectAll(`#node-${(node as Node).label.replace(/[^a-zA-Z0-9\- ]/g, '')}`)
+            .transition()
+            .duration(200)
+            .attr('stroke', 'red')
+            .attr('stroke-width', 2)
+      });
   }
 
   mouseOut($event: MouseEvent): void {
@@ -101,7 +125,9 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(200)
       .attr('fill', 'darkgray')
-      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS);
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
+      .attr('stroke', 'white')
+      .attr('stroke-width', 1);
   }
 
   zoomStart(): void {
@@ -205,7 +231,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     this.drag = d3.drag()
       .on('start', this.dragStart.bind(this))
       .on('drag', this.dragging.bind(this))
-      // .on('end', this.dragEnd.bind(this));
+    // .on('end', this.dragEnd.bind(this));
 
     d3.select('#svg-container-nljp')
       .append('div')
@@ -256,10 +282,13 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.render();
     });
 
-    // this.simulation.on('end', () => {
-    //   console.log('Simulation Ended');
-    //   this.zoomFit();
-    // });
+    this.simulation.on('end', () => {
+      console.log('Simulation Ended');
+      if(!this.fitted) {
+        this.zoomFit();
+        this.fitted = true;
+      } 
+    });
 
     // Compute Simulation Based on SUPERGRAPH 💪
     this.simulation.restart();
@@ -325,6 +354,7 @@ export class NlJpComponent implements OnInit, AfterViewInit {
         .attr('cy', (d: Node) => { return d.y; })
         .attr('id', (d: Node) => { return `node-${d.label.replace(/[^a-zA-Z0-9\- ]/g, '')}`; })
         .attr('label', (d: Node) => { return d.label; })
+        .attr('exists', i)
         .attr('fill', 'darkgray')
         .on('mouseover', this.mouseOver.bind(this))
         .on('mouseout', this.mouseOut.bind(this));
@@ -363,7 +393,8 @@ export class NlJpComponent implements OnInit, AfterViewInit {
       this.nodes.selectAll('circle')
         .attr('cx', (d: Node) => { return d.x; })
         .attr('cy', (d: Node) => { return d.y; })
-        .attr('fill-opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2 });
+        .attr('fill-opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2 })
+        .attr('stroke-opacity', (d: Node) => { return d.time[i - 1] ? 1 : 0.2; });
 
       this.links
         .attr('stroke-opacity', (d: Link<Node>) => { return d.time[i - 1]; })

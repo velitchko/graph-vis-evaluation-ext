@@ -30,6 +30,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
   private zoom: d3.ZoomBehavior<any, {}>;
   private zoomStartTime: number;
   private zoomEndTime: number;
+  private fitted: boolean = false;
 
   private drag: d3.DragBehavior<any, {}, any>;
   private dragStartTime: number;
@@ -168,6 +169,23 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .duration(200)
       .attr('fill', 'red')
       .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS * 2);
+
+    // find adjacent nodes and highlight
+    let adjacentNodes = this.graph.links.filter((link: Link<Node>) => { 
+      // console.log((link.source as Node).id, (link.target as Node).id)
+      return (link.source as Node).label === label || (link.target as Node).label === label; 
+    });
+    adjacentNodes.forEach((link: Link<Node>) => {
+      let node = (link.source as Node).label === label ? link.target : link.source;
+      // if not in current time step dont return
+      if ((node as Node).time[this.value - 1] === 0) return;
+
+      d3.select(`#node-${(node as Node).label.replace(/[^a-zA-Z0-9\- ]/g, '')}`)
+        .transition()
+        .duration(200)
+        .attr('stroke', 'red')
+        .attr('stroke-width', 2);
+    });
   }
 
   mouseOut($event: MouseEvent): void {
@@ -178,7 +196,9 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       .transition()
       .duration(200)
       .attr('fill', 'darkgray')
-      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS);
+      .attr('r', DISPLAY_CONFIGURATION.NODE_RADIUS)
+      .attr('stroke', 'white')
+      .attr('stroke-width', 1);
   }
 
   zoomStart(): void {
@@ -307,10 +327,14 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       this.render();
     });
 
-    // this.simulation.on('end', () => {
-    //   console.log('simulation ended');
-    //   this.zoomFit();
-    // });
+    this.simulation.on('end', () => {
+      console.log('simulation ended');
+      
+      if(!this.fitted) {
+        this.fitted = true;
+        this.zoomFit();
+      }
+    });
 
     // Compute Simulation Based on SUPERGRAPH 💪
     this.simulation.restart();
