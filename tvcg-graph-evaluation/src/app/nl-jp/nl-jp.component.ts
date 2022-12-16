@@ -6,6 +6,7 @@ import { NODE_LINK_SIZE, DISPLAY_CONFIGURATION, SIMULATION_CONFIGURATION, NUMBER
 import { Options } from '@angular-slider/ngx-slider';
 import { Node, Link } from '../node-link';
 import { HttpClient } from '@angular/common/http';
+import { reddit } from 'ngx-bootstrap-icons';
 @Component({
   selector: 'app-nl-jp',
   templateUrl: './nl-jp.component.html',
@@ -98,23 +99,41 @@ export class NlJpComponent implements OnInit, AfterViewInit {
     let selectedNode = this.graph.nodes.find((node: Node) => {
       return node.label === label;
     });
-
-    // find adjacent nodes and highlight
+    
+    // find all adjacent nodes
     let adjacentNodes = this.graph.links.filter((link: Link<Node>) => {
-      // console.log((link.source as Node).id, (link.target as Node).id)
-      return (link.source as Node).label === label || (link.target as Node).label === label;
+      return (link.source as Node).label === selectedNode.label || (link.target as Node).label === selectedNode.label;
     });
 
-      // check if neighbor exists in time step
+    for(let i = 1; i <= this.cnt; i++) {
+      const jpWrapper = d3.select(`#nodelink-container-${i}`);
+      
       adjacentNodes.forEach((link: Link<Node>) => {
         let node = (link.source as Node).label === label ? link.target : link.source;
+        
+        let doesLinkExist = adjacentNodes.find((link: Link<Node>) => { 
+          return (link.source as Node).label === (node as Node).label || (link.target as Node).label === (node as Node).label; 
+        });
 
-        d3.selectAll(`#node-${(node as Node).label.replace(/[^a-zA-Z0-9\- ]/g, '')}`)
-            .transition()
-            .duration(200)
-            .attr('stroke', 'red')
-            .attr('stroke-width', 2)
-      });
+        jpWrapper.selectAll(`#node-${(node as Node).label.replace(/[^a-zA-Z0-9\- ]/g, '')}`)
+          .transition()
+          .duration(200)
+          .attr('stroke', () => {
+            if(doesLinkExist.time[i-1] === 1 && (node as Node).time[i-1] === 1 && selectedNode.time[i-1] === 1) {
+              return 'red';
+            } else {
+              return 'darkgray';
+            }
+          })
+          .attr('stroke-width', () => {
+            if(doesLinkExist.time[i-1] === 1 && (node as Node).time[i-1] === 1 && selectedNode.time[i-1] === 1) {
+              return '2';
+            } else {
+              return '1';
+            }
+          });
+      })
+    }
   }
 
   mouseOut($event: MouseEvent): void {
