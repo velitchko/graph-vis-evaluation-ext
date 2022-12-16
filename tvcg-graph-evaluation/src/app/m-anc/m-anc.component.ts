@@ -336,7 +336,7 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .style('left', `${$event.pageX + 10}px`)
       .style('top', `${$event.pageY + 10}px`)
       .style('display', 'inline-block')
-      .html(`Source: ${labelFrom}<br/>Target: ${labelTo}`);
+      .html(`Row: ${labelFrom}<br/>Column: ${labelTo}`);
 
     // row highlight
     d3.selectAll('.rows')
@@ -352,13 +352,13 @@ export class MAncComponent implements OnInit, AfterViewInit {
       .attr('fill-opacity', 0.25)
       .attr('x', ($event.currentTarget as any).x.baseVal.value)
       .attr('y', 0)
-      .attr('height', ($event.currentTarget as any).y.baseVal.value);
+      .attr('height',  this.graph.nodes.length*DISPLAY_CONFIGURATION.CELL_SIZE); //($event.currentTarget as any).y.baseVal.value
 
     this.highlightedRow
       .attr('fill-opacity', 0.25)
       .attr('x', 0)
       .attr('y', ($event.currentTarget as any).y.baseVal.value)
-      .attr('width', ($event.currentTarget as any).x.baseVal.value);
+      .attr('width',  this.graph.nodes.length*DISPLAY_CONFIGURATION.CELL_SIZE); // ($event.currentTarget as any).x.baseVal.value
   }
 
   mouseOut($event: Event): void {

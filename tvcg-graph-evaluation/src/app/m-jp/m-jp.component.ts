@@ -203,7 +203,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .ease(d3.easeCubicOut)
         .attr('x', (d: Cell) => { return d.x * (DISPLAY_CONFIGURATION.CELL_SIZE/4); })
         .attr('y', (d: Cell) => { return d.y * (DISPLAY_CONFIGURATION.CELL_SIZE/4); })
-        .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
+        // .attr('fill-opacity', (d: Cell) => { return d.link ? d.time[this.value - 1] : 0; });
 
       // ROWS
       const rows = container.selectAll('.row-label');
@@ -284,7 +284,7 @@ export class MJpComponent implements OnInit, AfterViewInit {
       .style('left', `${$event.pageX + 10}px`)
       .style('top', `${$event.pageY + 10}px`)
       .style('display', 'inline-block')
-      .html(`Source: ${labelFrom}<br/>Target: ${labelTo}`);
+      .html(`Row: ${labelFrom}<br/>Column: ${labelTo}`);
 
     for (let i = 1; i <= this.cnt; i++) {
       d3 
@@ -292,17 +292,15 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('fill-opacity', 0.25)
         .attr('x',+($event.currentTarget as any).x.baseVal.value)
         .attr('y', 0)
-        .attr('height', (_: any) => { return ($event.currentTarget as any).y.baseVal.value; });
+        .attr('height', this.graph.nodes.length*(DISPLAY_CONFIGURATION.CELL_SIZE / 4)); // ($event.currentTarget as any).y.baseVal.value
 
       d3
         
         .select(`#highlighted-row-T${i}`)
         .attr('fill-opacity', 0.25)
         .attr('x', 0)
-        .attr('y', (_) => {
-          return ($event.currentTarget as any).y.baseVal.value;
-        })
-        .attr('width', ($event.currentTarget as any).x.baseVal.value);
+        .attr('y', ($event.currentTarget as any).y.baseVal.value)
+        .attr('width', this.graph.nodes.length*(DISPLAY_CONFIGURATION.CELL_SIZE / 4)); // ($event.currentTarget as any).x.baseVal.value
     }
   }
 
@@ -419,24 +417,24 @@ export class MJpComponent implements OnInit, AfterViewInit {
 
   init(): void {
     let edgeHash = new Map<string, any>();
+
     this.graph.links
       .map((l: Link<Node>) => { return { source: l.source, target: l.target, time: l.time }; })
       .forEach((link: Link<Node>) => {
         // Undirected graph - duplicate link s-t && t-s
         let idA: string, idB: string = '';
-        if (link.source === link.target) return;
+        // if (link.source === link.target) return;
         idA = `${(link.source as Node).label}-${(link.target as Node).label}`;
         idB = `${(link.target as Node).label}-${(link.source as Node).label}`;
 
         edgeHash.set(idA, link);
         edgeHash.set(idB, link);
       });
-
+      
     // sort nodes alphabetically
-    
-      this.graph.nodes.sort((a: Node, b: Node) => {
-        return a.label.localeCompare(b.label);
-      });
+    this.graph.nodes.sort((a: Node, b: Node) => {
+      return a.label.localeCompare(b.label);
+    });
 
     this.graph.nodes.forEach((source: Node, sourceId: number) => {
       this.graph.nodes.forEach((target: Node, targetId: number) => {
