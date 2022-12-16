@@ -307,10 +307,10 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       this.render();
     });
 
-    this.simulation.on('end', () => {
-      console.log('simulation ended');
-      this.zoomFit();
-    });
+    // this.simulation.on('end', () => {
+    //   console.log('simulation ended');
+    //   this.zoomFit();
+    // });
 
     // Compute Simulation Based on SUPERGRAPH 💪
     this.simulation.restart();
