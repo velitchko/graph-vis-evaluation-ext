@@ -522,6 +522,9 @@ export class MJpComponent implements OnInit, AfterViewInit {
         .attr('stroke-width', '1px')
         .attr('stroke-opacity', .25)
         .merge(cells)
+
+      cells
+        .filter((d: Cell) => { return d.link === 1; })
         .on('mouseover', this.mouseOver.bind(this))
         .on('mouseout', this.mouseOut.bind(this));
 
