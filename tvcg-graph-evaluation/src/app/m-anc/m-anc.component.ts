@@ -11,7 +11,7 @@ import { isFunction } from 'lodash';
 @Component({
   selector: 'app-m-anc',
   templateUrl: './m-anc.component.html',
-  styleUrls: ['./m-anc.component.scss']
+  styleUrls: ['./m-anc.component.scss', '../app.component.scss']
 })
 export class MAncComponent implements OnInit, AfterViewInit {
   @ViewChild('container') container: ElementRef;
@@ -113,6 +113,11 @@ export class MAncComponent implements OnInit, AfterViewInit {
       this.init();
       this.render();
     }
+  }
+
+  selectAlgorithm(algorithm: string): void {
+    this.selectedAlgorithm = algorithm;
+    this.updateOrder();
   }
 
   updateOrder(): void {

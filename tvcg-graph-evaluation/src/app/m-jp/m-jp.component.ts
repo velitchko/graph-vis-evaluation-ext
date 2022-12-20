@@ -9,7 +9,7 @@ import { ReorderService } from '../reorder.service';
 @Component({
   selector: 'app-m-jp',
   templateUrl: './m-jp.component.html',
-  styleUrls: ['./m-jp.component.scss']
+  styleUrls: ['./m-jp.component.scss', '../app.component.scss']
 })
 
 export class MJpComponent implements OnInit, AfterViewInit {
@@ -92,6 +92,11 @@ export class MJpComponent implements OnInit, AfterViewInit {
       this.init();
       this.render();
     }
+  }
+
+  selectAlgorithm(algorithm: string): void {
+    this.selectedAlgorithm = algorithm;
+    this.updateOrder();
   }
 
   updateOrder(): void {

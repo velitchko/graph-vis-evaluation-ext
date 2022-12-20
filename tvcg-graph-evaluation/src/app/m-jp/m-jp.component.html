@@ -1,10 +1,18 @@
 <div id="container" #container>
-    <!-- <h3>m-jp</h3> -->
-    <p>reordering algorithm:</p>
-    <select [(ngModel)]="selectedAlgorithm" (change)="updateOrder()">
-        <option *ngFor="let algorithm of ro.algorithms" [value]="algorithm">
-            {{algorithm}}
-        </option>
-    </select>
+    <div ngbDropdown class="d-inline-block" style="padding-top: 10px; padding-left: 10px; padding-bottom: 10px;">
+        <button type="button" class="btn btn-secondary" id="dropdownBasic1" ngbDropdownToggle>
+            {{ selectedAlgorithm == 'none' ? 'Select Reordering Algorithm' : selectedAlgorithm }}
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngFor="let algorithm of ro.algorithms" (click)="selectAlgorithm(algorithm)" ngbDropdownItem>{{algorithm}}</button>
+        </div>
+    </div>
     <div id="svg-container-mjp"></div>
+</div>
+
+
+<div class="home-btn">
+    <button type="button" class="btn btn-secondary btn-lg">
+        <a class="white" href="/home">Back Home</a>
+    </button>
 </div>

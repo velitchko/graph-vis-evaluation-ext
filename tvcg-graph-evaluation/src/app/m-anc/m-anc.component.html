@@ -1,9 +1,11 @@
 <div id="container" #container>
-    <div [style.width]="sliderWidth">
+    <div [style.width]="sliderWidth" style="padding-left: 10px;">
         <ngx-slider [(value)]="value" [options]="options" (valueChange)="update($event)"></ngx-slider>
     </div>
-    <p>current speed: {{ customAnimationSpeed/1000 }}s</p>
     <div class="controls">
+        <div style="display: inline; padding-right: 5px;">
+            <span class="badge badge-secondary" style="padding: 10px 10px 10px 10px; font-size: 18px; font-weight:400;">current speed: {{ customAnimationSpeed/1000 }}s</span>
+        </div>
         <button type="button" class="btn btn-light" (click)="slower()">
             <i-bs name="skip-backward-fill" width="25" height="25"></i-bs>
         </button>
@@ -17,12 +19,19 @@
             <i-bs name="skip-forward-fill" width="25" height="25"></i-bs>
         </button>
     </div>
-    <p>reordering algorithm:</p>
-    <select [(ngModel)]="selectedAlgorithm" (change)="updateOrder()">
-        <option *ngFor="let algorithm of ro.algorithms" [value]="algorithm">
-            {{algorithm}}
-        </option>
-    </select>
-    <!-- <h3>m-tl</h3> -->
+    <div ngbDropdown class="d-inline-block" style="padding-left: 10px; padding-bottom: 10px;">
+        <button type="button" class="btn btn-secondary" id="dropdownBasic1" ngbDropdownToggle>
+            {{ selectedAlgorithm == 'none' ? 'Select Reordering Algorithm' : selectedAlgorithm }}
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <button *ngFor="let algorithm of ro.algorithms" (click)="selectAlgorithm(algorithm)" ngbDropdownItem>{{algorithm}}</button>
+        </div>
+    </div>
     <div id="svg-container-manc"></div>
+</div>
+
+<div class="home-btn">
+    <button type="button" class="btn btn-secondary btn-lg">
+        <a class="white" href="/home">Back Home</a>
+    </button>
 </div>

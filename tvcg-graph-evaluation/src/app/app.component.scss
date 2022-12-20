@@ -14,3 +14,16 @@
 ::ng-deep .ngx-slider .ngx-slider-bar {
     background-color: #D2F0EA !important;
 }
+
+.home-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    & button a {
+        color: white;
+    }
+}
+
+.controls {
+    padding: 10px;
+}

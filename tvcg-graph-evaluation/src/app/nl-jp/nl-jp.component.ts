@@ -10,7 +10,7 @@ import { reddit } from 'ngx-bootstrap-icons';
 @Component({
   selector: 'app-nl-jp',
   templateUrl: './nl-jp.component.html',
-  styleUrls: ['./nl-jp.component.scss']
+  styleUrls: ['./nl-jp.component.scss', '../app.component.scss']
 })
 
 export class NlJpComponent implements OnInit, AfterViewInit {

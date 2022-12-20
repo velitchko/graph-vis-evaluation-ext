@@ -11,7 +11,7 @@ import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 @Component({
   selector: 'app-nl-anc',
   templateUrl: './nl-anc.component.html',
-  styleUrls: ['./nl-anc.component.scss']
+  styleUrls: ['./nl-anc.component.scss', '../app.component.scss']
 })
 
 export class NlAncComponent implements OnInit, AfterViewInit {
@@ -278,7 +278,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
     const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
     const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
-    this.g.attr('transform', `scale(${scale}) translate(50, 50)`);
+    this.g.attr('transform', `scale(${scale}) translate(${translate[0]-50}, ${translate[1]+150})`);
   }
 
   setup(): void {
@@ -332,7 +332,7 @@ export class NlAncComponent implements OnInit, AfterViewInit {
       
       if(!this.fitted) {
         this.fitted = true;
-        this.zoomFit();
+        // this.zoomFit();
       }
     });
 
