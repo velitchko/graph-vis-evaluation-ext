@@ -29,7 +29,15 @@ npm install
 
 Step 3: Launch the web application
 
+(builds the application and starts the webserver)
 
 ```bash
-npm run start dev
+npm run build:prod && npm run start
+```
+
+or 
+
+(runs the application in development mode)
+```bash
+npm run dev
 ```
